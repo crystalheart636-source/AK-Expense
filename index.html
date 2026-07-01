@@ -869,6 +869,8 @@
     font-size: 9px;
 }
 
+
+
 /* Vendor Summary Action Buttons - Ultra Compact */
 .vendor-action-btn {
     background: transparent !important;
@@ -904,6 +906,105 @@
 .vendor-action-btn.view:hover {
     color: #374151 !important;
     transform: scale(1.1);
+}
+
+/* ===== RESPONSIVE FOR MOBILE ===== */
+@media (max-width: 768px) {
+    .grid-2 {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+    .kpi-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+    .aging-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+    }
+    .header-actions {
+        flex-wrap: wrap !important;
+        justify-content: flex-start !important;
+    }
+    .header-actions .btn {
+        font-size: 11px !important;
+        padding: 4px 8px !important;
+    }
+    .page-header h1 {
+        font-size: 16px !important;
+    }
+    .page-header .subtitle {
+        font-size: 12px !important;
+    }
+    .card {
+        padding: 10px !important;
+    }
+    .quick-tx-card .tx-form {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+    }
+    .edit-form-container .row > div {
+        flex: 1 1 100% !important;
+        min-width: 100% !important;
+    }
+    .vendor-ledger-container {
+        flex-direction: column !important;
+    }
+    .vendor-ledger-container select {
+        width: 100% !important;
+    }
+    .vendor-ledger-container .btn {
+        width: 100% !important;
+    }
+    .data-grid-wrapper {
+        overflow-x: auto !important;
+    }
+    .data-grid {
+        font-size: 11px !important;
+        min-width: 500px !important;
+    }
+    .data-grid th,
+    .data-grid td {
+        padding: 4px 6px !important;
+        font-size: 11px !important;
+    }
+    .ledger-table {
+        font-size: 11px !important;
+    }
+    .ledger-table th,
+    .ledger-table td {
+        padding: 4px 6px !important;
+        font-size: 11px !important;
+    }
+    .registered-vendor-tag {
+        font-size: 10px !important;
+        padding: 2px 8px !important;
+    }
+    .report-grid {
+        grid-template-columns: 1fr 1fr !important;
+    }
+    .report-item {
+        font-size: 12px !important;
+        padding: 4px 8px !important;
+    }
+    .aging-cell {
+        padding: 4px 6px !important;
+    }
+    .aging-cell .amount {
+        font-size: 12px !important;
+    }
+    .aging-cell .label {
+        font-size: 9px !important;
+    }
+    .kpi-card {
+        padding: 6px 8px !important;
+    }
+    .kpi-card .kpi-label {
+        font-size: 9px !important;
+    }
+    .kpi-card .kpi-value {
+        font-size: 13px !important;
+    }
 }
 
     </style>
