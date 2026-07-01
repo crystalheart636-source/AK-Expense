@@ -908,27 +908,102 @@
     transform: scale(1.1);
 }
 
-/* ===== RESPONSIVE FOR MOBILE ===== */
+/* ============================================================
+   RESPONSIVE FOR MOBILE & TABLET (UPDATED)
+   ============================================================ */
+
+/* === TABLET (768px - 1024px) === */
+@media (max-width: 1024px) {
+    .grid-2 {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 14px !important;
+    }
+    .kpi-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 10px !important;
+    }
+    .aging-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 8px !important;
+    }
+    .header-actions .btn {
+        font-size: 12px !important;
+        padding: 4px 10px !important;
+    }
+    .page-header h1 {
+        font-size: 17px !important;
+    }
+    .data-grid {
+        font-size: 12px !important;
+        min-width: 600px !important;
+    }
+    .data-grid th,
+    .data-grid td {
+        padding: 5px 8px !important;
+        font-size: 12px !important;
+    }
+    .ledger-table {
+        font-size: 12px !important;
+    }
+    .ledger-table th,
+    .ledger-table td {
+        padding: 5px 8px !important;
+        font-size: 12px !important;
+    }
+    .report-grid {
+        grid-template-columns: 1fr 1fr !important;
+    }
+    .quick-tx-card .tx-form {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+    }
+    .edit-form-container .row > div {
+        flex: 1 1 45% !important;
+        min-width: 100px !important;
+    }
+    .vendor-ledger-container {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+    }
+    .vendor-ledger-container select {
+        flex: 2 !important;
+        min-width: 150px !important;
+    }
+    .vendor-ledger-container .btn {
+        flex: 1 !important;
+        min-width: 80px !important;
+    }
+}
+
+/* === MOBILE (up to 768px) === */
 @media (max-width: 768px) {
+    /* === GRID: Single Column === */
     .grid-2 {
         grid-template-columns: 1fr !important;
         gap: 12px !important;
     }
+    
+    /* === KPI: 2 Columns === */
     .kpi-grid {
         grid-template-columns: 1fr 1fr !important;
         gap: 8px !important;
     }
+    
+    /* === Aging: 2 Columns === */
     .aging-grid {
         grid-template-columns: 1fr 1fr !important;
         gap: 6px !important;
     }
+    
+    /* === Header === */
     .header-actions {
         flex-wrap: wrap !important;
         justify-content: flex-start !important;
+        gap: 4px !important;
     }
     .header-actions .btn {
         font-size: 11px !important;
-        padding: 4px 8px !important;
+        padding: 3px 8px !important;
     }
     .page-header h1 {
         font-size: 16px !important;
@@ -936,57 +1011,135 @@
     .page-header .subtitle {
         font-size: 12px !important;
     }
+    
+    /* === Cards === */
     .card {
         padding: 10px !important;
     }
+    .card h3 {
+        font-size: 13px !important;
+    }
+    
+    /* === Quick Transaction === */
     .quick-tx-card .tx-form {
         grid-template-columns: 1fr 1fr !important;
         gap: 6px !important;
     }
+    .quick-tx-card .tx-form label {
+        font-size: 11px !important;
+    }
+    .quick-tx-card .tx-form input,
+    .quick-tx-card .tx-form select {
+        padding: 4px 6px !important;
+        font-size: 12px !important;
+        min-height: 32px !important;
+    }
+    .quick-tx-card .tx-form .btn {
+        font-size: 12px !important;
+        padding: 4px 10px !important;
+        min-height: 32px !important;
+    }
+    
+    /* === Edit Form === */
     .edit-form-container .row > div {
         flex: 1 1 100% !important;
         min-width: 100% !important;
     }
+    .edit-form-container input,
+    .edit-form-container select {
+        font-size: 13px !important;
+        padding: 5px 8px !important;
+        min-height: 34px !important;
+    }
+    .edit-form-container .btn {
+        font-size: 13px !important;
+        padding: 4px 12px !important;
+        min-height: 34px !important;
+    }
+    
+    /* === Vendor Ledger Container === */
     .vendor-ledger-container {
         flex-direction: column !important;
     }
     .vendor-ledger-container select {
         width: 100% !important;
+        flex: none !important;
     }
     .vendor-ledger-container .btn {
         width: 100% !important;
+        flex: none !important;
+        margin-top: 4px !important;
     }
+    
+    /* === Tables with Horizontal Scroll (Swipe Support) === */
     .data-grid-wrapper {
         overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        scroll-behavior: smooth !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 6px !important;
+        padding: 2px 0 !important;
     }
+    
+    /* Show scroll hint on mobile */
+    .data-grid-wrapper::after {
+        content: "← Swipe to see more →";
+        display: block;
+        text-align: center;
+        font-size: 10px;
+        color: #94a3b8;
+        padding: 4px 0;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+    }
+    
+    /* Hide scroll hint if table fits */
+    .data-grid-wrapper:has(table)::after {
+        display: block;
+    }
+    
     .data-grid {
         font-size: 11px !important;
         min-width: 500px !important;
+        width: 100% !important;
     }
     .data-grid th,
     .data-grid td {
         padding: 4px 6px !important;
         font-size: 11px !important;
+        white-space: nowrap !important;
     }
+    
+    /* === Ledger Table === */
     .ledger-table {
         font-size: 11px !important;
+        min-width: 400px !important;
+        width: 100% !important;
     }
     .ledger-table th,
     .ledger-table td {
         padding: 4px 6px !important;
         font-size: 11px !important;
+        white-space: nowrap !important;
     }
+    
+    /* === Registered Vendors Tags === */
     .registered-vendor-tag {
         font-size: 10px !important;
         padding: 2px 8px !important;
     }
+    
+    /* === Reports === */
     .report-grid {
         grid-template-columns: 1fr 1fr !important;
+        gap: 4px !important;
     }
     .report-item {
         font-size: 12px !important;
         padding: 4px 8px !important;
     }
+    
+    /* === Aging Cells === */
     .aging-cell {
         padding: 4px 6px !important;
     }
@@ -996,6 +1149,8 @@
     .aging-cell .label {
         font-size: 9px !important;
     }
+    
+    /* === KPI Cards === */
     .kpi-card {
         padding: 6px 8px !important;
     }
@@ -1004,6 +1159,92 @@
     }
     .kpi-card .kpi-value {
         font-size: 13px !important;
+    }
+    
+    /* === Sidebar (Top on Mobile) === */
+    .sidebar {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        padding: 6px !important;
+        gap: 2px !important;
+        width: 100% !important;
+    }
+    .sidebar-brand {
+        display: none !important;
+    }
+    .sidebar-btn {
+        padding: 6px 10px !important;
+        font-size: 12px !important;
+        min-width: 60px !important;
+        flex: 1 !important;
+        text-align: center !important;
+    }
+    .sidebar-footer {
+        display: none !important;
+    }
+    .app-container {
+        flex-direction: column !important;
+    }
+    .main-content {
+        padding: 10px !important;
+    }
+    
+    /* === Login === */
+    .login-box {
+        padding: 20px !important;
+        margin: 20px auto !important;
+    }
+    .login-box h2 {
+        font-size: 20px !important;
+    }
+    
+    /* === Install Banner === */
+    .install-banner {
+        font-size: 12px !important;
+        padding: 6px 12px !important;
+    }
+    .install-banner button {
+        font-size: 12px !important;
+        padding: 4px 12px !important;
+    }
+    
+    /* === Backup === */
+    .backup-actions {
+        gap: 4px !important;
+    }
+    .backup-actions button {
+        font-size: 10px !important;
+        padding: 3px 8px !important;
+    }
+    .backup-status {
+        font-size: 12px !important;
+        padding: 6px 10px !important;
+    }
+    .import-drop-zone {
+        font-size: 12px !important;
+        padding: 10px !important;
+    }
+    
+    /* === Reset Button === */
+    .reset-btn-container .btn {
+        font-size: 11px !important;
+        padding: 2px 10px !important;
+    }
+    .btn-danger {
+        font-size: 12px !important;
+        padding: 4px 12px !important;
+    }
+    
+    /* === Modal === */
+    .modal-box {
+        padding: 16px !important;
+        max-width: 95% !important;
+    }
+    .modal-box .modal-form {
+        grid-template-columns: 1fr !important;
+    }
+    .modal-box .modal-header h3 {
+        font-size: 15px !important;
     }
 }
 
