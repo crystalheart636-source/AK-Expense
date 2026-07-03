@@ -6,35 +6,13 @@
     <title>Expense Management System</title>
     
     <!-- PWA META TAGS -->
-    <link rel="manifest" href="data:application/json;charset=utf-8,{
-        &quot;name&quot;: &quot;Expense Management System&quot;,
-        &quot;short_name&quot;: &quot;ExpenseSys&quot;,
-        &quot;description&quot;: &quot;Manage expenses, vendors, and personal spending.&quot;,
-        &quot;start_url&quot;: &quot;.&quot;,
-        &quot;display&quot;: &quot;standalone&quot;,
-        &quot;background_color&quot;: &quot;#f4f7fc&quot;,
-        &quot;theme_color&quot;: &quot;#1e2a4a&quot;,
-        &quot;icons&quot;: [
-            {
-                &quot;src&quot;: &quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='50' fill='%231e2a4a'/%3E%3Ctext x='256' y='340' font-size='280' text-anchor='middle' fill='white' font-family='sans-serif'%3E💸%3C/text%3E%3C/svg%3E&quot;,
-                &quot;sizes&quot;: &quot;512x512&quot;,
-                &quot;type&quot;: &quot;image/svg+xml&quot;,
-                &quot;purpose&quot;: &quot;any maskable&quot;
-            },
-            {
-                &quot;src&quot;: &quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='20' fill='%231e2a4a'/%3E%3Ctext x='96' y='130' font-size='100' text-anchor='middle' fill='white' font-family='sans-serif'%3E💸%3C/text%3E%3C/svg%3E&quot;,
-                &quot;sizes&quot;: &quot;192x192&quot;,
-                &quot;type&quot;: &quot;image/svg+xml&quot;,
-                &quot;purpose&quot;: &quot;any maskable&quot;
-            },
-            {
-                &quot;src&quot;: &quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='16' fill='%231e2a4a'/%3E%3Ctext x='64' y='88' font-size='70' text-anchor='middle' fill='white' font-family='sans-serif'%3E💸%3C/text%3E%3C/svg%3E&quot;,
-                &quot;sizes&quot;: &quot;128x128&quot;,
-                &quot;type&quot;: &quot;image/svg+xml&quot;,
-                &quot;purpose&quot;: &quot;any maskable&quot;
-            }
-        ]
-    }" />
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="theme-color" content="#1e2a4a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="ExpenseSys" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='20' fill='%231e2a4a'/%3E%3Ctext x='96' y='130' font-size='100' text-anchor='middle' fill='white' font-family='sans-serif'%3E%F0%9F%92%B8%3C/text%3E%3C/svg%3E" />
     
     <!-- SERVICE WORKER -->
     <script>
