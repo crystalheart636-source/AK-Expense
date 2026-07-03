@@ -2879,14 +2879,14 @@ function updateKPIs() {
         }
         const txs = [];
         allAdminExpenses.forEach(e => {
-            if (e.senior === name) txs.push({ date: e.date, desc: 'Received from Admin', amount: e.amount, type: 'in' });
+            if (e.senior === name) txs.push({ date: e.date, desc: 'Received from Admin', amount: e.amount, type: 'in', note: e.note || '' });
         });
         allDistributions.forEach(e => {
-            if (e.senior === name) txs.push({ date: e.date, desc: `Paid to ${e.junior}`, amount: e.amount, type: 'out' });
-            if (e.junior === name) txs.push({ date: e.date, desc: `Received from ${e.senior}`, amount: e.amount, type: 'in' });
+            if (e.senior === name) txs.push({ date: e.date, desc: `Paid to ${e.junior}`, amount: e.amount, type: 'out', note: e.note || '' });
+            if (e.junior === name) txs.push({ date: e.date, desc: `Received from ${e.senior}`, amount: e.amount, type: 'in', note: e.note || '' });
         });
         allDailyExpenses.forEach(e => {
-            if (e.worker === name) txs.push({ date: e.date, desc: `Daily Expense: ${e.desc}`, amount: e.amount, type: 'out' });
+            if (e.worker === name) txs.push({ date: e.date, desc: 'Daily Expense', amount: e.amount, type: 'out', note: e.desc || '' });
         });
         if (txs.length === 0) {
             alert('No transactions found for this person.');
@@ -2900,6 +2900,7 @@ function updateKPIs() {
             rows += `<tr>
                 <td>${t.date || ''}</td>
                 <td>${t.desc}</td>
+                <td>${t.note || '-'}</td>
                 <td style="color:#0b7e3d; font-weight:500;">${t.type === 'in' ? formatCurrency(t.amount) : ''}</td>
                 <td style="color:#b22234; font-weight:500;">${t.type === 'out' ? formatCurrency(t.amount) : ''}</td>
                 <td style="font-weight:600;">${formatCurrency(running)}</td>
@@ -2919,7 +2920,7 @@ function updateKPIs() {
         </div>
         <h3>📋 Transaction History</h3>
         <table>
-            <tr><th>Date</th><th>Description</th><th>Received</th><th>Given</th><th>Balance</th></tr>
+            <tr><th>Date</th><th>Description</th><th>Notes</th><th>Received</th><th>Given/Spent</th><th>Balance</th></tr>
             ${rows}
         </table>`;
         openReportPopup(`👤 Individual Ledger Report - ${name}`, body);
