@@ -85,7 +85,7 @@
             background: white;
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            overflow: hidden;
+            overflow: visible;
             min-height: 80vh;
         }
         .sidebar {
@@ -96,6 +96,13 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
+            border-radius: 16px 0 0 16px;
+            position: sticky;
+            top: 0;
+            align-self: flex-start;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 10;
         }
         .sidebar-brand {
             color: white;
@@ -136,6 +143,7 @@
             padding: 20px;
             background: #f8fafc;
             overflow-x: hidden;
+            border-radius: 0 16px 16px 0;
         }
         .main-content .card {
             background: white;
@@ -292,8 +300,23 @@
             gap: 16px;
         }
         @media (max-width: 768px) {
-            .app-container { flex-direction: column; }
-            .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; padding: 10px; gap: 4px; }
+            .app-container { flex-direction: column; overflow: visible; }
+            .sidebar {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                padding: 10px;
+                gap: 4px;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                height: auto;
+                align-self: auto;
+                overflow-y: visible;
+                border-radius: 0;
+            }
+            .main-content { border-radius: 0; }
             .sidebar-brand { display: none; }
             .sidebar-btn { padding: 8px 12px; font-size: 13px; width: auto; flex: 1; text-align: center; min-width: 80px; }
             .sidebar-footer { display: none; }
@@ -1098,7 +1121,10 @@
                 <div class="card">
                     <h3>👤 Individual Ledger <span class="security-badge">Edit / Delete</span></h3>
                     <label>Select Person</label>
-                    <select id="ledgerPerson" onchange="showLedger()"></select>
+                    <div class="vendor-ledger-container" style="display:flex; flex-direction:column; gap:8px; margin-bottom:8px; align-items:flex-start;">
+                        <select id="ledgerPerson" onchange="showLedger()" style="width:50%; min-width:160px; padding:6px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:14px; min-height:38px;"></select>
+                        <button onclick="openWorkerReport()" class="btn btn-primary" style="padding:5px 14px; font-size:13px; min-height:32px; margin-top:0; width:auto;">View</button>
+                    </div>
                     <div id="ledgerDisplay" style="margin-top:8px; max-height:400px; overflow-y:auto;"></div>
                 </div>
             </div>
@@ -1300,17 +1326,17 @@
             <div class="card" style="padding:14px;">
                 <h3 style="font-size:13.5px; font-weight:700; margin-bottom:8px;"><i class="fas fa-file-alt"></i> Reports</h3>
                 <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px;">
-                    <button class="btn btn-sm btn-outline" onclick="alert('PDF Export')" style="font-size:12px;"><i class="fas fa-file-pdf"></i> PDF</button>
-                    <button class="btn btn-sm btn-outline" onclick="alert('Excel Export')" style="font-size:12px;"><i class="fas fa-file-excel"></i> Excel</button>
-                    <button class="btn btn-sm btn-outline" onclick="alert('CSV Export')" style="font-size:12px;"><i class="fas fa-file-csv"></i> CSV</button>
+                    <button class="btn btn-sm btn-outline" onclick="exportVendorPDF()" style="font-size:12px;"><i class="fas fa-file-pdf"></i> PDF</button>
+                    <button class="btn btn-sm btn-outline" onclick="exportVendorExcel()" style="font-size:12px;"><i class="fas fa-file-excel"></i> Excel</button>
+                    <button class="btn btn-sm btn-outline" onclick="exportVendorCSV()" style="font-size:12px;"><i class="fas fa-file-csv"></i> CSV</button>
                 </div>
                 <div class="report-grid">
-                    <div class="report-item" onclick="alert('Vendor Statement')" style="font-size:12px;"><span>Vendor Statement</span><span class="icon"><i class="fas fa-chevron-right"></i></span></div>
-                    <div class="report-item" onclick="alert('Outstanding Report')" style="font-size:12px;"><span>Outstanding</span><span class="icon"><i class="fas fa-chevron-right"></i></span></div>
-                    <div class="report-item" onclick="alert('Aging Report')" style="font-size:12px;"><span>Aging Report</span><span class="icon"><i class="fas fa-chevron-right"></i></span></div>
-                    <div class="report-item" onclick="alert('Purchase Report')" style="font-size:12px;"><span>Purchase Report</span><span class="icon"><i class="fas fa-chevron-right"></i></span></div>
-                    <div class="report-item" onclick="alert('Payment Report')" style="font-size:12px;"><span>Payment Report</span><span class="icon"><i class="fas fa-chevron-right"></i></span></div>
-                    <div class="report-item" onclick="alert('Cash Flow Impact')" style="font-size:12px;"><span>Cash Flow</span><span class="icon"><i class="fas fa-chevron-right"></i></span></div>
+                    <div class="report-item" onclick="showVendorStatementReport()" style="font-size:12px;"><span>Vendor Statement</span><span class="icon"><i class="fas fa-chevron-right"></i></span></div>
+                    <div class="report-item" onclick="showOutstandingReport()" style="font-size:12px;"><span>Outstanding</span><span class="icon"><i class="fas fa-chevron-right"></i></span></div>
+                    <div class="report-item" onclick="showAgingReportPopup()" style="font-size:12px;"><span>Aging Report</span><span class="icon"><i class="fas fa-chevron-right"></i></span></div>
+                    <div class="report-item" onclick="showPurchaseReport()" style="font-size:12px;"><span>Purchase Report</span><span class="icon"><i class="fas fa-chevron-right"></i></span></div>
+                    <div class="report-item" onclick="showPaymentReport()" style="font-size:12px;"><span>Payment Report</span><span class="icon"><i class="fas fa-chevron-right"></i></span></div>
+                    <div class="report-item" onclick="showCashFlowReport()" style="font-size:12px;"><span>Cash Flow</span><span class="icon"><i class="fas fa-chevron-right"></i></span></div>
                 </div>
             </div>
 
@@ -1360,7 +1386,17 @@
                 </div>
             </div>
             <div class="card"><h3>📋 Personal Summary</h3><div id="personalSummary">Loading...</div></div>
-            <div class="card"><h3>📜 Personal Expense History</h3><div id="personalHistory" style="max-height:300px; overflow-y:auto;">Loading...</div></div>
+            <div class="grid-2" style="gap:14px;">
+                <div class="card"><h3>📜 Personal Expense History</h3><div id="personalHistory" style="max-height:300px; overflow-y:auto;">Loading...</div></div>
+                <div class="card">
+                    <h3>📅 Date-wise Summary</h3>
+                    <div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; align-items:center;">
+                       <label style="font-size:13.5px; margin:0; font-weight:600;">Select Date</label>
+                       <input type="date" id="personalDateFilter" onchange="renderPersonalDateWise()" style="padding:6px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:13.5px; min-height:38px; width:180px;" />
+                    </div>
+                    <div id="personalDateWiseSummary" style="margin-top:8px; max-height:300px; overflow-y:auto;"></div>
+                </div>
+            </div>
             
             <!-- Reset Personal -->
 		<div style="margin-top:16px; text-align:right;">
@@ -2167,6 +2203,248 @@ function renderVendorSummary() {
         }
     }
 
+    // ============================================================
+    // VENDOR REPORTS & EXPORTS (PDF / Excel / CSV + Report List)
+    // ============================================================
+    function openReportPopup(title, bodyHtml) {
+        const popupHtml = `
+<!DOCTYPE html>
+<html>
+<head><title>${title}</title>
+<style>
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: white; padding: 20px; max-width: 1100px; margin: auto; }
+    h1 { color: #1e2a4a; border-bottom: 2px solid #eef2f7; padding-bottom: 10px; font-size: 22px; }
+    .summary { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
+    .summary-item { background: #f8fafc; padding: 10px 16px; border-radius: 8px; border: 1px solid #e2e8f0; flex: 1; min-width: 100px; }
+    .summary-item .label { font-size: 11px; color: #6b7280; }
+    .summary-item .value { font-size: 18px; font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+    th { background: #1e2a4a; color: white; padding: 8px 10px; text-align: left; }
+    td { padding: 6px 10px; border-bottom: 1px solid #e2e8f0; }
+    .print-btn { background: #1e2a4a; color: white; border: none; padding: 8px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 15px; }
+    .print-btn:hover { background: #2b3a66; }
+    .footer { margin-top: 20px; color: #6b7280; font-size: 12px; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+    .positive { color: #0b7e3d; font-weight: bold; }
+    .negative { color: #b22234; font-weight: bold; }
+    @media print { .print-btn { display: none; } }
+</style>
+</head>
+<body>
+    <h1>${title}</h1>
+    ${bodyHtml}
+    <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+    <div class="footer">Generated on ${new Date().toLocaleString()} | Global Vision Expense Management System</div>
+</body>
+</html>`;
+        const popup = window.open('', '_blank', 'width=1100,height=800,scrollbars=yes');
+        if (popup) {
+            popup.document.write(popupHtml);
+            popup.document.close();
+        } else {
+            alert('Popup blocked! Please allow popups for this site to view the report.');
+        }
+    }
+
+    function getVendorSummaryStats() {
+        return allVendors.map(v => {
+            const txns = allVendorTransactions.filter(t => t.vendor === v.name);
+            let purchases = 0, payments = 0;
+            txns.forEach(t => {
+                if (t.txType === 'purchase') purchases += t.amount;
+                else if (t.txType === 'payment') payments += t.amount;
+            });
+            const outstanding = purchases - payments;
+            let status = 'Settled';
+            if (outstanding > 0) status = 'Overdue';
+            else if (outstanding < 0) status = 'Due Soon';
+            return { name: v.name, phone: v.phone || '-', purchases, payments, outstanding, status };
+        });
+    }
+
+    function downloadBlob(content, filename, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function exportVendorPDF() {
+        const stats = getVendorSummaryStats();
+        if (stats.length === 0) { alert('No vendor data to export.'); return; }
+        let rows = '', totalP = 0, totalPay = 0, totalOut = 0;
+        stats.forEach(s => {
+            totalP += s.purchases; totalPay += s.payments; totalOut += s.outstanding;
+            rows += `<tr>
+                <td>${s.name}</td><td>${s.phone}</td>
+                <td>${formatCurrency(s.purchases)}</td>
+                <td>${formatCurrency(s.payments)}</td>
+                <td class="${s.outstanding > 0 ? 'negative' : s.outstanding < 0 ? 'positive' : ''}">${formatCurrency(s.outstanding)}</td>
+                <td>${s.status}</td>
+            </tr>`;
+        });
+        const body = `
+        <div class="summary">
+            <div class="summary-item"><div class="label">Total Vendors</div><div class="value">${stats.length}</div></div>
+            <div class="summary-item"><div class="label">Total Purchases</div><div class="value" style="color:#0b7e3d;">${formatCurrency(totalP)}</div></div>
+            <div class="summary-item"><div class="label">Total Payments</div><div class="value" style="color:#b22234;">${formatCurrency(totalPay)}</div></div>
+            <div class="summary-item"><div class="label">Total Outstanding</div><div class="value">${formatCurrency(totalOut)}</div></div>
+        </div>
+        <table><tr><th>Vendor</th><th>Contact</th><th>Purchases</th><th>Payments</th><th>Outstanding</th><th>Status</th></tr>${rows}</table>`;
+        openReportPopup('📊 Vendor Summary Report', body);
+    }
+
+    function exportVendorExcel() {
+        const stats = getVendorSummaryStats();
+        if (stats.length === 0) { alert('No vendor data to export.'); return; }
+        let rows = '';
+        stats.forEach(s => {
+            rows += `<tr><td>${s.name}</td><td>${s.phone}</td><td>${s.purchases}</td><td>${s.payments}</td><td>${s.outstanding}</td><td>${s.status}</td></tr>`;
+        });
+        const html = `<html><head><meta charset="UTF-8"></head><body><table border="1">
+            <tr><th>Vendor</th><th>Contact</th><th>Purchases</th><th>Payments</th><th>Outstanding</th><th>Status</th></tr>
+            ${rows}
+        </table></body></html>`;
+        const dateStr = new Date().toISOString().split('T')[0];
+        downloadBlob(html, `Vendor_Summary_${dateStr}.xls`, 'application/vnd.ms-excel');
+    }
+
+    function exportVendorCSV() {
+        const stats = getVendorSummaryStats();
+        if (stats.length === 0) { alert('No vendor data to export.'); return; }
+        let csv = 'Vendor,Contact,Purchases,Payments,Outstanding,Status\n';
+        stats.forEach(s => {
+            const name = (s.name || '').replace(/"/g, '""');
+            csv += `"${name}","${s.phone}",${s.purchases},${s.payments},${s.outstanding},"${s.status}"\n`;
+        });
+        const dateStr = new Date().toISOString().split('T')[0];
+        downloadBlob(csv, `Vendor_Summary_${dateStr}.csv`, 'text/csv;charset=utf-8;');
+    }
+
+    function showVendorStatementReport() {
+        const sel = document.getElementById('vendorLedgerSelect');
+        if (!sel || !sel.value) {
+            alert('Please select a vendor from the Vendor Ledger dropdown above first, then tap "Vendor Statement".');
+            return;
+        }
+        openVendorReport();
+    }
+
+    function showOutstandingReport() {
+        const stats = getVendorSummaryStats().filter(s => s.outstanding !== 0).sort((a, b) => b.outstanding - a.outstanding);
+        if (stats.length === 0) { alert('No outstanding balances found. All vendors are settled.'); return; }
+        let rows = '', totalOut = 0;
+        stats.forEach(s => {
+            totalOut += s.outstanding;
+            rows += `<tr><td>${s.name}</td><td>${s.phone}</td>
+                <td class="${s.outstanding > 0 ? 'negative' : 'positive'}">${formatCurrency(s.outstanding)}</td>
+                <td>${s.status}</td></tr>`;
+        });
+        const body = `
+        <div class="summary">
+            <div class="summary-item"><div class="label">Vendors with Balance</div><div class="value">${stats.length}</div></div>
+            <div class="summary-item"><div class="label">Net Outstanding</div><div class="value">${formatCurrency(totalOut)}</div></div>
+        </div>
+        <table><tr><th>Vendor</th><th>Contact</th><th>Outstanding</th><th>Status</th></tr>${rows}</table>`;
+        openReportPopup('⚖️ Outstanding Balances Report', body);
+    }
+
+    function showAgingReportPopup() {
+        const now = new Date();
+        const vendorBuckets = {};
+        allVendorTransactions.forEach(t => {
+            if (t.txType !== 'purchase') return;
+            const due = t.dueDate ? new Date(t.dueDate) : new Date(t.date);
+            const diff = Math.floor((now - due) / (1000 * 60 * 60 * 24));
+            if (!vendorBuckets[t.vendor]) vendorBuckets[t.vendor] = { current: 0, days30: 0, days60: 0, days90: 0, days90plus: 0 };
+            if (diff <= 0) vendorBuckets[t.vendor].current += t.amount;
+            else if (diff <= 30) vendorBuckets[t.vendor].days30 += t.amount;
+            else if (diff <= 60) vendorBuckets[t.vendor].days60 += t.amount;
+            else if (diff <= 90) vendorBuckets[t.vendor].days90 += t.amount;
+            else vendorBuckets[t.vendor].days90plus += t.amount;
+        });
+        const names = Object.keys(vendorBuckets);
+        if (names.length === 0) { alert('No purchase transactions found for aging analysis.'); return; }
+        let rows = '';
+        let totals = { current: 0, days30: 0, days60: 0, days90: 0, days90plus: 0 };
+        names.forEach(name => {
+            const b = vendorBuckets[name];
+            Object.keys(totals).forEach(k => totals[k] += b[k]);
+            rows += `<tr><td>${name}</td><td>${formatCurrency(b.current)}</td><td>${formatCurrency(b.days30)}</td><td>${formatCurrency(b.days60)}</td><td>${formatCurrency(b.days90)}</td><td>${formatCurrency(b.days90plus)}</td></tr>`;
+        });
+        const body = `<table><tr><th>Vendor</th><th>Current</th><th>1-30 Days</th><th>31-60 Days</th><th>61-90 Days</th><th>90+ Days</th></tr>
+            ${rows}
+            <tr style="font-weight:bold; background:#f8fafc;"><td>Total</td><td>${formatCurrency(totals.current)}</td><td>${formatCurrency(totals.days30)}</td><td>${formatCurrency(totals.days60)}</td><td>${formatCurrency(totals.days90)}</td><td>${formatCurrency(totals.days90plus)}</td></tr>
+        </table>`;
+        openReportPopup('📅 Vendor Aging Report', body);
+    }
+
+    function showPurchaseReport() {
+        const txns = allVendorTransactions.filter(t => t.txType === 'purchase').sort((a, b) => a.date < b.date ? 1 : -1);
+        if (txns.length === 0) { alert('No purchase transactions found.'); return; }
+        let rows = '', total = 0;
+        txns.forEach(t => {
+            total += t.amount;
+            rows += `<tr><td>${t.date || ''}</td><td>${t.vendor}</td><td>${t.ref || t.invoice || '-'}</td><td>${t.note || ''}</td><td>${formatCurrency(t.amount)}</td></tr>`;
+        });
+        const body = `
+        <div class="summary">
+            <div class="summary-item"><div class="label">Total Purchases</div><div class="value" style="color:#0b7e3d;">${formatCurrency(total)}</div></div>
+            <div class="summary-item"><div class="label">Transactions</div><div class="value">${txns.length}</div></div>
+        </div>
+        <table><tr><th>Date</th><th>Vendor</th><th>Reference</th><th>Note</th><th>Amount</th></tr>${rows}</table>`;
+        openReportPopup('🛒 Purchase Report', body);
+    }
+
+    function showPaymentReport() {
+        const txns = allVendorTransactions.filter(t => t.txType === 'payment').sort((a, b) => a.date < b.date ? 1 : -1);
+        if (txns.length === 0) { alert('No payment transactions found.'); return; }
+        let rows = '', total = 0;
+        txns.forEach(t => {
+            total += t.amount;
+            rows += `<tr><td>${t.date || ''}</td><td>${t.vendor}</td><td>${t.ref || t.invoice || '-'}</td><td>${t.note || ''}</td><td>${formatCurrency(t.amount)}</td></tr>`;
+        });
+        const body = `
+        <div class="summary">
+            <div class="summary-item"><div class="label">Total Payments</div><div class="value" style="color:#b22234;">${formatCurrency(total)}</div></div>
+            <div class="summary-item"><div class="label">Transactions</div><div class="value">${txns.length}</div></div>
+        </div>
+        <table><tr><th>Date</th><th>Vendor</th><th>Reference</th><th>Note</th><th>Amount</th></tr>${rows}</table>`;
+        openReportPopup('💳 Payment Report', body);
+    }
+
+    function showCashFlowReport() {
+        if (allVendorTransactions.length === 0) { alert('No vendor transactions found.'); return; }
+        const monthly = {};
+        let totalPurchases = 0, totalPayments = 0;
+        allVendorTransactions.forEach(t => {
+            const month = (t.date || '').substring(0, 7);
+            if (!monthly[month]) monthly[month] = { purchases: 0, payments: 0 };
+            if (t.txType === 'purchase') { monthly[month].purchases += t.amount; totalPurchases += t.amount; }
+            else if (t.txType === 'payment') { monthly[month].payments += t.amount; totalPayments += t.amount; }
+        });
+        const months = Object.keys(monthly).sort();
+        let rows = '';
+        months.forEach(m => {
+            const b = monthly[m];
+            const net = b.payments - b.purchases;
+            rows += `<tr><td>${m || '-'}</td><td>${formatCurrency(b.purchases)}</td><td>${formatCurrency(b.payments)}</td><td class="${net < 0 ? 'negative' : 'positive'}">${formatCurrency(net)}</td></tr>`;
+        });
+        const netFlow = totalPayments - totalPurchases;
+        const body = `
+        <div class="summary">
+            <div class="summary-item"><div class="label">Total Purchases</div><div class="value" style="color:#0b7e3d;">${formatCurrency(totalPurchases)}</div></div>
+            <div class="summary-item"><div class="label">Total Payments (Cash Out)</div><div class="value" style="color:#b22234;">${formatCurrency(totalPayments)}</div></div>
+            <div class="summary-item"><div class="label">Net Cash Flow Impact</div><div class="value ${netFlow < 0 ? 'negative' : 'positive'}">${formatCurrency(netFlow)}</div></div>
+        </div>
+        <table><tr><th>Month</th><th>Purchases</th><th>Payments</th><th>Net Impact</th></tr>${rows}</table>`;
+        openReportPopup('💹 Cash Flow Impact Report', body);
+    }
+
     function renderAging() {
         const now = new Date();
         let buckets = { current: 0, days30: 0, days60: 0, days90: 0, days90plus: 0 };
@@ -2613,9 +2891,59 @@ function updateKPIs() {
         container.innerHTML = html;
     }
 
-    // ============================================================
-    // SETTLEMENT POPUP
-    // ============================================================
+    function openWorkerReport() {
+        const name = document.getElementById('ledgerPerson').value;
+        if (!name) {
+            alert('Please select a person first.');
+            return;
+        }
+        const txs = [];
+        allAdminExpenses.forEach(e => {
+            if (e.senior === name) txs.push({ date: e.date, desc: 'Received from Admin', amount: e.amount, type: 'in' });
+        });
+        allDistributions.forEach(e => {
+            if (e.senior === name) txs.push({ date: e.date, desc: `Paid to ${e.junior}`, amount: e.amount, type: 'out' });
+            if (e.junior === name) txs.push({ date: e.date, desc: `Received from ${e.senior}`, amount: e.amount, type: 'in' });
+        });
+        allDailyExpenses.forEach(e => {
+            if (e.worker === name) txs.push({ date: e.date, desc: `Daily Expense: ${e.desc}`, amount: e.amount, type: 'out' });
+        });
+        if (txs.length === 0) {
+            alert('No transactions found for this person.');
+            return;
+        }
+        txs.sort((a, b) => a.date < b.date ? -1 : 1);
+        let totalIn = 0, totalOut = 0, running = 0, rows = '';
+        txs.forEach(t => {
+            if (t.type === 'in') { totalIn += t.amount; running += t.amount; }
+            else { totalOut += t.amount; running -= t.amount; }
+            rows += `<tr>
+                <td>${t.date || ''}</td>
+                <td>${t.desc}</td>
+                <td style="color:#0b7e3d; font-weight:500;">${t.type === 'in' ? formatCurrency(t.amount) : ''}</td>
+                <td style="color:#b22234; font-weight:500;">${t.type === 'out' ? formatCurrency(t.amount) : ''}</td>
+                <td style="font-weight:600;">${formatCurrency(running)}</td>
+            </tr>`;
+        });
+        const balance = totalIn - totalOut;
+        const body = `
+        <p><strong>Person:</strong> ${name}</p>
+        <div class="summary">
+            <div class="summary-item"><div class="label">💰 Total Received</div><div class="value" style="color:#0b7e3d;">${formatCurrency(totalIn)}</div></div>
+            <div class="summary-item"><div class="label">💳 Total Given / Spent</div><div class="value" style="color:#b22234;">${formatCurrency(totalOut)}</div></div>
+            <div class="summary-item" style="border-color: ${balance >= 0 ? '#0b7e3d' : '#b22234'};">
+                <div class="label">⚖️ Balance</div>
+                <div class="value ${balance > 0 ? 'positive' : balance < 0 ? 'negative' : ''}">${formatCurrency(balance)}</div>
+                <div style="font-size:11px;">${balance > 0 ? '🟢 To Return' : balance < 0 ? '🔴 Receivable' : '⚪ Settled'}</div>
+            </div>
+        </div>
+        <h3>📋 Transaction History</h3>
+        <table>
+            <tr><th>Date</th><th>Description</th><th>Received</th><th>Given</th><th>Balance</th></tr>
+            ${rows}
+        </table>`;
+        openReportPopup(`👤 Individual Ledger Report - ${name}`, body);
+    }
     function openSettlementPopup() {
         const worker = document.getElementById('settlementWorker').value;
         const startDate = document.getElementById('settlementStartDate').value;
@@ -2782,6 +3110,7 @@ function updateKPIs() {
 
     function renderPersonal() {
         updateCategoryDropdown();
+        renderPersonalDateWise();
 
         const container = document.getElementById('personalSummary');
         if (allPersonalExpenses.length === 0) {
@@ -2823,6 +3152,29 @@ function updateKPIs() {
         });
         hhtml += '</table>';
         histContainer.innerHTML = hhtml;
+    }
+
+    function renderPersonalDateWise() {
+        const container = document.getElementById('personalDateWiseSummary');
+        const dateInput = document.getElementById('personalDateFilter');
+        if (!container || !dateInput) return;
+        if (!dateInput.value) {
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+        }
+        const date = dateInput.value;
+        if (!date) { container.innerHTML = '<p>Select a date.</p>'; return; }
+        const dayExpenses = allPersonalExpenses.filter(e => e.date === date);
+        if (dayExpenses.length === 0) { container.innerHTML = '<p>No expenses on this date.</p>'; return; }
+        let total = 0;
+        let html = '<table><tr><th>Category</th><th>Amount</th><th>Description</th></tr>';
+        dayExpenses.forEach(e => {
+            total += e.amount;
+            html += `<tr><td>${e.category}</td><td>${formatCurrency(e.amount)}</td><td>${e.desc}</td></tr>`;
+        });
+        html += `<tr style="font-weight:bold; background:#f0f4ff;"><td>Total</td><td>${formatCurrency(total)}</td><td></td></tr>`;
+        html += '</table>';
+        container.innerHTML = html;
     }
 
     // ============================================================
@@ -3388,6 +3740,7 @@ function updateKPIs() {
         document.getElementById('txDate').value = today;
         document.getElementById('modalTxDate').value = today;
 	document.getElementById('vendorDateFilter').value = today;
+	document.getElementById('personalDateFilter').value = today;
     }
 
     // ============================================================
@@ -3460,6 +3813,77 @@ function deleteVendor(vendorId, vendorName) {
             alert('❌ Error deleting vendor: ' + err.message);
         });
 }
+
+// ============================================================
+// KEYBOARD CELL NAVIGATION (Arrow keys move between fields
+// like a spreadsheet, instead of always needing the mouse)
+// ============================================================
+function getNavigableFields() {
+    return Array.from(document.querySelectorAll('input:not([type=hidden]):not([disabled]):not([readonly]), select:not([disabled]), textarea:not([disabled]):not([readonly])'))
+        .filter(el => el.offsetParent !== null);
+}
+
+function navigateCell(current, direction) {
+    const fields = getNavigableFields();
+    const rect = current.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    let best = null, bestScore = Infinity;
+
+    fields.forEach(el => {
+        if (el === current) return;
+        const r = el.getBoundingClientRect();
+        const ex = r.left + r.width / 2;
+        const ey = r.top + r.height / 2;
+        const dx = ex - cx;
+        const dy = ey - cy;
+        let valid = false;
+
+        if (direction === 'up') valid = dy < -2 && Math.abs(dx) < Math.abs(dy) * 3;
+        else if (direction === 'down') valid = dy > 2 && Math.abs(dx) < Math.abs(dy) * 3;
+        else if (direction === 'left') valid = dx < -2 && Math.abs(dy) < Math.abs(dx) * 1.5;
+        else if (direction === 'right') valid = dx > 2 && Math.abs(dy) < Math.abs(dx) * 1.5;
+
+        if (!valid) return;
+        // Prefer the closest field, weighting the off-axis distance so we stay in the same "row"/"column"
+        const score = (direction === 'up' || direction === 'down')
+            ? Math.abs(dy) + Math.abs(dx) * 2
+            : Math.abs(dx) + Math.abs(dy) * 2;
+        if (score < bestScore) { bestScore = score; best = el; }
+    });
+
+    if (best) {
+        best.focus();
+        if (typeof best.select === 'function' && best.tagName !== 'SELECT') best.select();
+    }
+}
+
+document.addEventListener('keydown', function(e) {
+    const el = document.activeElement;
+    if (!el || !['INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName)) return;
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+
+    const isTextLike = el.tagName === 'INPUT' && ['text', 'number', 'date', 'email', 'tel', 'search', 'url', 'password'].includes(el.type);
+    const isTextarea = el.tagName === 'TEXTAREA';
+
+    if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        navigateCell(el, 'up');
+    } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        navigateCell(el, 'down');
+    } else if (e.key === 'ArrowLeft') {
+        // Inside free text, let the cursor move normally until it hits the start
+        if ((isTextLike || isTextarea) && el.selectionStart !== 0) return;
+        e.preventDefault();
+        navigateCell(el, 'left');
+    } else if (e.key === 'ArrowRight') {
+        // Inside free text, let the cursor move normally until it hits the end
+        if ((isTextLike || isTextarea) && el.selectionEnd !== el.value.length) return;
+        e.preventDefault();
+        navigateCell(el, 'right');
+    }
+});
 
 </script>
 
