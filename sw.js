@@ -1,4 +1,4 @@
-const CACHE_NAME = 'expense-v17';
+const CACHE_NAME = 'expense-v18';
 
 self.addEventListener('install', function (e) {
     self.skipWaiting();

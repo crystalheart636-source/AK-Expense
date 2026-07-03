@@ -1451,10 +1451,14 @@
     // PWA INSTALL
     // ============================================================
     let deferredPrompt = null;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        document.getElementById('installBanner').style.display = 'flex';
+        if (!isStandalone) {
+            document.getElementById('installBanner').style.display = 'flex';
+        }
     });
 
     window.addEventListener('appinstalled', () => {
