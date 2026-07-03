@@ -2861,7 +2861,7 @@ function updateKPIs() {
                     t.collection, t.id, t.amount, t.note || t.desc || '', t.date,
                     t.senior || '', t.junior || '', t.worker || '', t.desc || ''
                 );
-                html += `<tr><td>${t.date}</td><td>${t.desc}</td><td class="${cls}">${sign} ${formatCurrency(t.amount)}</td><td>${t.type === 'in' ? 'Received' : 'Given'}</td><td>${actionBtns}</td></tr>`;
+                html += `<tr><td>${t.date}</td><td>${t.desc}</td><td class="${cls}">${sign} ${formatCurrency(t.amount)}</td><td>${t.type === 'in' ? 'Received' : 'Given/Spent'}</td><td>${actionBtns}</td></tr>`;
             });
             html += `<tr style="font-weight:bold; background:#f0f4ff;"><td colspan="2">Summary</td>
                 <td>Total In: ${formatCurrency(totalIn)}<br>Total Out: ${formatCurrency(totalOut)}<br><span class="${totalIn-totalOut > 0 ? 'positive' : 'negative'}">Balance: ${formatCurrency(totalIn-totalOut)}</span></td>
