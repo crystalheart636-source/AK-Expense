@@ -1453,16 +1453,23 @@
     let deferredPrompt = null;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
+    if (isStandalone) {
+        localStorage.setItem('pwaInstalled', 'true');
+        document.getElementById('installBanner').style.display = 'none';
+    }
+
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        if (!isStandalone) {
+        const alreadyInstalled = isStandalone || localStorage.getItem('pwaInstalled') === 'true';
+        if (!alreadyInstalled) {
             document.getElementById('installBanner').style.display = 'flex';
         }
     });
 
     window.addEventListener('appinstalled', () => {
         deferredPrompt = null;
+        localStorage.setItem('pwaInstalled', 'true');
         document.getElementById('installBanner').style.display = 'none';
         console.log('✅ App installed');
     });
