@@ -39,27 +39,9 @@
     <!-- SERVICE WORKER -->
     <script>
         if ('serviceWorker' in navigator) {
-            const swCode = `
-                self.addEventListener('install', function(e) {
-                    e.waitUntil(
-                        caches.open('expense-v16').then(function(cache) {
-                            return cache.addAll(['.', 'index.html']);
-                        })
-                    );
-                });
-                self.addEventListener('fetch', function(e) {
-                    e.respondWith(
-                        caches.match(e.request).then(function(response) {
-                            return response || fetch(e.request);
-                        })
-                    );
-                });
-            `;
-            const blob = new Blob([swCode], { type: 'application/javascript' });
-            const swUrl = URL.createObjectURL(blob);
-            navigator.serviceWorker.register(swUrl)
+            navigator.serviceWorker.register('./sw.js')
                 .then(() => console.log('✅ Service Worker registered'))
-                .catch(() => console.log('⚠️ Service Worker registration failed'));
+                .catch((err) => console.log('⚠️ Service Worker registration failed', err));
         }
     </script>
 
@@ -1054,7 +1036,7 @@
                             <option value="Junior">Junior</option>
                         </select>
                     </div>
-                    <div style="flex:0.5;"><button onclick="addWorker()" class="btn-success" style="margin-top:22px; padding:8px 12px; font-size:13.5px;">➕ Add Worker</button></div>
+                    <div style="flex:0.5;"><button onclick="addWorker()" class="btn-success" style="margin-top:22px; padding:4px 12px; font-size:12px;">➕ Add Worker</button></div>
                 </div>
                 <div id="workerList" style="margin-top:6px;"></div>
             </div>
@@ -1497,12 +1479,21 @@
         document.getElementById('installBanner').style.display = 'flex';
     });
 
+    window.addEventListener('appinstalled', () => {
+        deferredPrompt = null;
+        document.getElementById('installBanner').style.display = 'none';
+        console.log('✅ App installed');
+    });
+
     function installApp() {
         if (deferredPrompt) {
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then(() => {
+                deferredPrompt = null;
                 document.getElementById('installBanner').style.display = 'none';
             });
+        } else {
+            alert('اگر یہ بٹن انسٹال ونڈو نہ کھولے تو براؤزر کے مینو (⋮) میں جا کر "Add to Home screen" یا "Install app" کا آپشن منتخب کریں۔');
         }
     }
 
