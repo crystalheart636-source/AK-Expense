@@ -26,6 +26,7 @@
     <!-- FIREBASE SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 
     <style>
@@ -994,7 +995,7 @@
                 <h3>✏️ Edit Worker Transaction</h3>
                 <div class="row">
                     <div><label>Date</label><input type="date" id="workersEditDate" /></div>
-                    <div><label>Amount</label><input type="number" id="workersEditAmount" step="0.01" /></div>
+                    <div><label>Amount</label><input type="text" inputmode="decimal" id="workersEditAmount" class="amount-input" oninput="formatAmountInput(this)" /></div>
                     <div><label>Note</label><input type="text" id="workersEditNote" /></div>
                     <div style="flex:0.5; display:flex; gap:6px; align-items:flex-end;">
                         <button onclick="saveWorkersEdit()" class="btn-save" style="margin-top:22px;">💾 Save</button>
@@ -1019,41 +1020,86 @@
                 <div id="workerList" style="margin-top:6px;"></div>
             </div>
 
-            <!-- Add Expense (Admin → Senior) -->
-            <div class="card" id="adminExpenseCard">
-                <h3>➕ Add Expense (Admin → Senior)</h3>
-                <div class="row">
-                    <div><label>Date</label><input type="date" id="adminDate" /></div>
-                    <div><label>Senior</label><select id="adminSenior"></select></div>
-                    <div><label>Amount (PKR)</label><input type="number" id="adminAmount" placeholder="e.g. 12000" onkeydown="if(event.key==='Enter') addAdminExpense()" /></div>
-                    <div><label>Note</label><input type="text" id="adminNote" placeholder="Daily expense" onkeydown="if(event.key==='Enter') addAdminExpense()" /></div>
+            <!-- Row 1: Add Expense + Distribute (paired - same border/color) -->
+            <div class="grid-2" style="gap:14px;">
+                <!-- Add Expense (Admin → Senior) -->
+                <div class="card" id="adminExpenseCard" style="border:2px solid #2563EB; background:#eff6ff;">
+                    <h3>➕ Add Expense (Admin → Senior)</h3>
+                    <div class="row">
+                        <div><label>Date</label><input type="date" id="adminDate" /></div>
+                        <div><label>Senior</label><select id="adminSenior"></select></div>
+                        <div><label>Amount (PKR)</label><input type="text" inputmode="decimal" id="adminAmount" class="amount-input" placeholder="e.g. 12,000" oninput="formatAmountInput(this)" onkeydown="if(event.key==='Enter') addAdminExpense()" /></div>
+                        <div><label>Note</label><input type="text" id="adminNote" placeholder="Daily expense" onkeydown="if(event.key==='Enter') addAdminExpense()" /></div>
+                    </div>
+                    <button onclick="addAdminExpense()">✔ Add Expense</button>
                 </div>
-                <button onclick="addAdminExpense()">✔ Add Expense</button>
+
+                <!-- Distribute (Senior → Junior) -->
+                <div class="card" id="distributeCard" style="border:2px solid #2563EB; background:#eff6ff;">
+                    <h3>🔁 Distribute (Senior → Junior)</h3>
+                    <div class="row">
+                        <div><label>Date</label><input type="date" id="distDate" /></div>
+                        <div><label>Senior</label><select id="distSenior"></select></div>
+                        <div><label>Junior</label><select id="distJunior"></select></div>
+                        <div><label>Amount (PKR)</label><input type="text" inputmode="decimal" id="distAmount" class="amount-input" placeholder="e.g. 1,000" oninput="formatAmountInput(this)" onkeydown="if(event.key==='Enter') addDistribution()" /></div>
+                        <div><label>Note</label><input type="text" id="distNote" placeholder="Daily share" onkeydown="if(event.key==='Enter') addDistribution()" /></div>
+                    </div>
+                    <button onclick="addDistribution()">✔ Distribute</button>
+                </div>
             </div>
 
-            <!-- Distribute (Senior → Junior) -->
-            <div class="card" id="distributeCard">
-                <h3>🔁 Distribute (Senior → Junior)</h3>
-                <div class="row">
-                    <div><label>Date</label><input type="date" id="distDate" /></div>
-                    <div><label>Senior</label><select id="distSenior"></select></div>
-                    <div><label>Junior</label><select id="distJunior"></select></div>
-                    <div><label>Amount (PKR)</label><input type="number" id="distAmount" placeholder="e.g. 1000" onkeydown="if(event.key==='Enter') addDistribution()" /></div>
-                    <div><label>Note</label><input type="text" id="distNote" placeholder="Daily share" onkeydown="if(event.key==='Enter') addDistribution()" /></div>
+            <!-- Row 2: Add Daily Expense + Full Salary Section (paired - same border/color) -->
+            <div class="grid-2" style="gap:14px;">
+                <!-- Add Daily Expense (Any Worker) -->
+                <div class="card" id="dailyExpenseCard" style="border:2px solid #D97706; background:#eff6ff;">
+                    <h3>📝 Add Daily Expense (Any Worker)</h3>
+                    <div class="row">
+                        <div><label>Date</label><input type="date" id="dailyDate" /></div>
+                        <div><label>Worker</label><select id="dailyWorker"></select></div>
+                        <div><label>Amount (PKR)</label><input type="text" inputmode="decimal" id="dailyAmount" class="amount-input" placeholder="e.g. 500" oninput="formatAmountInput(this)" onkeydown="if(event.key==='Enter') addDailyExpense()" /></div>
+                        <div><label>Description</label><input type="text" id="dailyDesc" placeholder="e.g. Petrol, Lunch" onkeydown="if(event.key==='Enter') addDailyExpense()" /></div>
+                    </div>
+                    <button onclick="addDailyExpense()">✔ Add Daily Expense</button>
                 </div>
-                <button onclick="addDistribution()">✔ Distribute</button>
-            </div>
 
-            <!-- Add Daily Expense (Any Worker) -->
-            <div class="card" id="dailyExpenseCard">
-                <h3>📝 Add Daily Expense (Any Worker)</h3>
-                <div class="row">
-                    <div><label>Date</label><input type="date" id="dailyDate" /></div>
-                    <div><label>Worker</label><select id="dailyWorker"></select></div>
-                    <div><label>Amount (PKR)</label><input type="number" id="dailyAmount" placeholder="e.g. 500" onkeydown="if(event.key==='Enter') addDailyExpense()" /></div>
-                    <div><label>Description</label><input type="text" id="dailyDesc" placeholder="e.g. Petrol, Lunch" onkeydown="if(event.key==='Enter') addDailyExpense()" /></div>
+                <!-- Full Salary Section: Base Salary + Add Payment + History + Summary -->
+                <div class="card" id="salaryCard" style="border:2px solid #16A34A; background:#eff6ff;">
+                    <h3>💵 Salary</h3>
+
+                    <h4 style="font-size:13.5px; margin:6px 0 4px;">👷 Base Monthly Salary (Editable)</h4>
+                    <div id="baseSalaryList" style="max-height:180px; overflow-y:auto; margin-bottom:10px;">Loading...</div>
+
+                    <h4 style="font-size:13.5px; margin:10px 0 4px;">➕ Add Salary Payment</h4>
+                    <div class="row">
+                        <div><label>Date</label><input type="date" id="salaryDate" /></div>
+                        <div><label>Worker</label><select id="salaryWorker"></select></div>
+                        <div><label>For Month</label><input type="month" id="salaryMonth" /></div>
+                        <div><label>Amount (PKR)</label><input type="text" inputmode="decimal" id="salaryAmount" class="amount-input" placeholder="e.g. 30,000" oninput="formatAmountInput(this)" onkeydown="if(event.key==='Enter') addSalaryPayment()" /></div>
+                        <div>
+                            <label>Note</label>
+                            <select id="salaryNote" onchange="handleSalaryNoteChange()">
+                                <option value="Base Salary">Base Salary</option>
+                                <option value="Advance Salary">Advance Salary</option>
+                                <option value="Partial Salary">Partial Salary</option>
+                                <option value="Full Salary">Full Salary</option>
+                                <option value="Bonus">Bonus</option>
+                                <option value="Other">Other (type below)</option>
+                            </select>
+                            <input type="text" id="salaryNoteOther" placeholder="Type custom note" onkeydown="if(event.key==='Enter') addSalaryPayment()" style="display:none; margin-top:6px;" />
+                        </div>
+                    </div>
+                    <button onclick="addSalaryPayment()" style="background:#16A34A;">✔ Add Salary Payment</button>
+
+                    <h4 style="font-size:13.5px; margin:14px 0 4px;">📊 Due / Remaining (Running)</h4>
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                        <label style="font-size:12.5px; margin:0;">As of Month:</label>
+                        <select id="salarySummaryMonth" onchange="renderSalarySummary()" style="padding:4px 8px; font-size:12.5px; min-height:30px;"></select>
+                    </div>
+                    <div id="salarySummary" style="max-height:260px; overflow-y:auto; margin-bottom:10px;">Loading...</div>
+
+                    <h4 style="font-size:13.5px; margin:10px 0 4px;">📜 Salary History</h4>
+                    <div id="salaryHistory" style="max-height:220px; overflow-y:auto;">Loading...</div>
                 </div>
-                <button onclick="addDailyExpense()">✔ Add Daily Expense</button>
             </div>
 
             <!-- Workers Dashboard -->
@@ -1320,7 +1366,7 @@
                 <h3>✏️ Edit Personal Expense</h3>
                 <div class="row">
                     <div><label>Date</label><input type="date" id="personalEditDate" /></div>
-                    <div><label>Amount</label><input type="number" id="personalEditAmount" step="0.01" /></div>
+                    <div><label>Amount</label><input type="text" inputmode="decimal" id="personalEditAmount" class="amount-input" oninput="formatAmountInput(this)" /></div>
                     <div><label>Description</label><input type="text" id="personalEditDesc" /></div>
                     <div style="flex:0.5; display:flex; gap:6px; align-items:flex-end;">
                         <button onclick="savePersonalEdit()" class="btn-save" style="margin-top:22px;">💾 Save</button>
@@ -1340,7 +1386,7 @@
                             <button onclick="addNewCategory()" class="btn-success">Add</button>
                         </div>
                     </div>
-                    <div><label>Amount (PKR)</label><input type="number" id="personalAmount" placeholder="e.g. 500" onkeydown="if(event.key==='Enter') addPersonalExpense()" /></div>
+                    <div><label>Amount (PKR)</label><input type="text" inputmode="decimal" id="personalAmount" class="amount-input" placeholder="e.g. 500" oninput="formatAmountInput(this)" onkeydown="if(event.key==='Enter') addPersonalExpense()" /></div>
                     <div><label>Description</label><input type="text" id="personalDesc" placeholder="e.g. Lunch, Petrol" onkeydown="if(event.key==='Enter') addPersonalExpense()" /></div>
                     <div style="flex:0.5;"><button onclick="addPersonalExpense()" class="btn-success" style="margin-top:22px; padding:4px 12px; font-size:12px;">✔ Add</button></div>
                 </div>
@@ -1400,7 +1446,7 @@
                     <option value="discount">Discount</option>
                 </select>
             </div>
-            <div><label>Amount</label><input type="number" id="modalTxAmount" placeholder="0.00" step="0.01" /></div>
+            <div><label>Amount</label><input type="text" inputmode="decimal" id="modalTxAmount" class="amount-input" placeholder="0.00" oninput="formatAmountInput(this)" /></div>
             <div><label>Invoice #</label><input type="text" id="modalTxInvoice" placeholder="INV-001" /></div>
             <div class="full-width"><label>Note</label><input type="text" id="modalTxNote" placeholder="Description..." /></div>
             <div class="full-width modal-actions">
@@ -1446,6 +1492,8 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    const auth = firebase.auth();
+    const ADMIN_EMAIL = 'ak@expense.com';
 
     // ============================================================
     // PWA INSTALL
@@ -1502,6 +1550,19 @@
     }
 
     // ============================================================
+    // ESCAPE USER TEXT BEFORE INSERTING INTO THE PAGE (XSS SAFETY)
+    // ============================================================
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    // ============================================================
     // FORMAT AMOUNT WITH COMMAS (Real-time)
     // ============================================================
     function formatAmountInput(input) {
@@ -1538,11 +1599,11 @@
     // STATE
     // ============================================================
     let currentUser = 'viewer';
-    const ADMIN_PASSWORD = 'admin123';
     let allWorkers = [];
     let allAdminExpenses = [];
     let allDistributions = [];
     let allDailyExpenses = [];
+    let allSalaryPayments = [];
     let allVendors = [];
     let allVendorTransactions = [];
     let allPersonalExpenses = [];
@@ -1581,7 +1642,7 @@
     function saveWorkersEdit() {
         if (!workersEditData) { alert('No transaction being edited.'); return; }
         const newDate = document.getElementById('workersEditDate').value;
-        const newAmount = parseFloat(document.getElementById('workersEditAmount').value);
+        const newAmount = getRawAmount(document.getElementById('workersEditAmount'));
         const newNote = document.getElementById('workersEditNote').value.trim();
         if (!newDate || !newAmount || newAmount <= 0) {
             alert('Please fill all fields correctly.');
@@ -1597,6 +1658,9 @@
             updateData.junior = workersEditData.junior;
         } else if (workersEditData.collection === 'dailyExpenses') {
             updateData.desc = newNote || 'Expense';
+            updateData.worker = workersEditData.worker;
+        } else if (workersEditData.collection === 'salaryPayments') {
+            updateData.note = newNote || 'Salary';
             updateData.worker = workersEditData.worker;
         }
         db.collection(workersEditData.collection).doc(workersEditData.id).update(updateData)
@@ -1660,7 +1724,7 @@
     function savePersonalEdit() {
         if (!personalEditData) { alert('No expense being edited.'); return; }
         const newDate = document.getElementById('personalEditDate').value;
-        const newAmount = parseFloat(document.getElementById('personalEditAmount').value);
+        const newAmount = getRawAmount(document.getElementById('personalEditAmount'));
         const newDesc = document.getElementById('personalEditDesc').value.trim();
         if (!newDate || !newAmount || newAmount <= 0) {
             alert('Please fill all fields correctly.');
@@ -1713,12 +1777,6 @@
             alert('Only Admin can delete transactions!');
             return;
         }
-        const pwd = prompt('🔒 Enter Admin Password to delete this transaction:');
-        if (pwd === null) return;
-        if (pwd !== ADMIN_PASSWORD) {
-            alert('❌ Wrong password! Deletion cancelled.');
-            return;
-        }
         if (!confirm('⚠️ Are you sure you want to delete this transaction? This cannot be undone!')) return;
         
         db.collection(collection).doc(id).delete()
@@ -1732,12 +1790,6 @@
     function editWorkerName(workerId, currentName) {
         if (currentUser !== 'admin') {
             alert('Only Admin can edit worker names!');
-            return;
-        }
-        const pwd = prompt('🔒 Enter Admin Password to edit worker name:');
-        if (pwd === null) return;
-        if (pwd !== ADMIN_PASSWORD) {
-            alert('❌ Wrong password!');
             return;
         }
         const newName = prompt('Enter new name for worker:', currentName);
@@ -1777,6 +1829,11 @@
             snapshot.forEach(doc => batch.update(doc.ref, { worker: newName }));
             return batch.commit();
         }));
+        promises.push(db.collection('salaryPayments').where('worker', '==', oldName).get().then(snapshot => {
+            const batch = db.batch();
+            snapshot.forEach(doc => batch.update(doc.ref, { worker: newName }));
+            return batch.commit();
+        }));
         return Promise.all(promises).catch(err => console.error('Error updating transactions:', err));
     }
 
@@ -1786,12 +1843,6 @@
     function editVendorName(vendorId, currentName) {
         if (currentUser !== 'admin') {
             alert('Only Admin can edit vendor names!');
-            return;
-        }
-        const pwd = prompt('🔒 Enter Admin Password to edit vendor name:');
-        if (pwd === null) return;
-        if (pwd !== ADMIN_PASSWORD) {
-            alert('❌ Wrong password!');
             return;
         }
         const newName = prompt('Enter new name for vendor:', currentName);
@@ -1821,12 +1872,6 @@
             alert('Only Admin can delete workers!');
             return;
         }
-        const pwd = prompt(`🔒 Enter Admin Password to delete worker "${workerName}":`);
-        if (pwd === null) return;
-        if (pwd !== ADMIN_PASSWORD) {
-            alert('❌ Wrong password! Deletion cancelled.');
-            return;
-        }
         if (!confirm(`⚠️ Are you sure you want to delete worker "${workerName}"?\n\nThis will also delete ALL their transactions.\n\nThis cannot be undone!`)) return;
         
         const promises = [];
@@ -1846,6 +1891,11 @@
             return batch.commit();
         }));
         promises.push(db.collection('dailyExpenses').where('worker', '==', workerName).get().then(snapshot => {
+            const batch = db.batch();
+            snapshot.forEach(doc => batch.delete(doc.ref));
+            return batch.commit();
+        }));
+        promises.push(db.collection('salaryPayments').where('worker', '==', workerName).get().then(snapshot => {
             const batch = db.batch();
             snapshot.forEach(doc => batch.delete(doc.ref));
             return batch.commit();
@@ -1916,7 +1966,7 @@
         const date = document.getElementById('modalTxDate').value;
         const vendor = document.getElementById('modalTxVendor').value;
         const txType = document.getElementById('modalTxType').value;
-        const amount = parseFloat(document.getElementById('modalTxAmount').value);
+        const amount = getRawAmount(document.getElementById('modalTxAmount'));
         const invoice = document.getElementById('modalTxInvoice').value;
         const note = document.getElementById('modalTxNote').value;
 
@@ -1995,8 +2045,8 @@ function renderVendorSummary() {
         if (search && !v.name.toLowerCase().includes(search)) return;
 
        html += `<tr>
-    <td><strong>${v.name}</strong></td>
-    <td>${v.phone || '-'}</td>
+    <td><strong>${escapeHtml(v.name)}</strong></td>
+    <td>${escapeHtml(v.phone || '-')}</td>
     <td>${formatCurrency(purchases)}</td>
     <td>${formatCurrency(payments)}</td>
     <td class="${outstanding > 0 ? 'negative' : outstanding < 0 ? 'positive' : ''}">${formatCurrency(outstanding)}</td>
@@ -2066,8 +2116,8 @@ function renderVendorSummary() {
 
             html += `<tr>
                 <td>${t.date || ''}</td>
-                <td>${t.ref || t.invoice || '-'}</td>
-                <td>${t.note || t.txType || ''}</td>
+                <td>${escapeHtml(t.ref || t.invoice || '-')}</td>
+                <td>${escapeHtml(t.note || t.txType || '')}</td>
                 <td class="debit">${debit ? formatCurrency(debit) : ''}</td>
                 <td class="credit">${credit ? formatCurrency(credit) : ''}</td>
                 <td class="balance">${formatCurrency(running)}</td>
@@ -2647,7 +2697,41 @@ function updateKPIs() {
             .catch(err => alert('Error: ' + err.message));
     }
 
-  function renderWorkerList() {
+    function editBaseSalaryRow(workerId, currentValue) {
+        if (currentUser !== 'admin') { alert('Only Admin can edit!'); return; }
+        const cell = document.getElementById('baseSalaryDisplay_' + workerId);
+        if (!cell) return;
+        cell.innerHTML = `<input type="text" inputmode="decimal" id="baseSalaryInput_${workerId}" class="amount-input" value="${formatNumber(currentValue)}" oninput="formatAmountInput(this)" style="width:110px; padding:4px 6px; font-size:13px;" />
+            <button class="btn btn-sm btn-primary" style="font-size:11px; padding:3px 8px; margin-left:4px;" onclick="saveBaseSalaryRow('${workerId}')">💾 Save</button>`;
+        document.getElementById('baseSalaryInput_' + workerId).focus();
+    }
+
+    function saveBaseSalaryRow(workerId) {
+        const input = document.getElementById('baseSalaryInput_' + workerId);
+        if (!input) return;
+        const amount = getRawAmount(input);
+        if (isNaN(amount) || amount < 0) { alert('Enter a valid amount.'); return; }
+        db.collection('workers').doc(workerId).update({ baseSalary: amount })
+            .catch(err => alert('Error: ' + err.message));
+    }
+
+    function renderBaseSalaryList() {
+        const container = document.getElementById('baseSalaryList');
+        if (!container) return;
+        if (allWorkers.length === 0) { container.innerHTML = '<p>No workers yet.</p>'; return; }
+        let html = '<table><tr><th>Worker</th><th>Base Monthly Salary</th><th>Action</th></tr>';
+        allWorkers.forEach(w => {
+            html += `<tr>
+                <td>${w.name}</td>
+                <td id="baseSalaryDisplay_${w.id}">${formatCurrency(w.baseSalary || 0)}</td>
+                <td><button class="btn btn-sm btn-outline" style="font-size:11px; padding:3px 8px;" onclick="editBaseSalaryRow('${w.id}', ${w.baseSalary || 0})">✏️ Edit</button></td>
+            </tr>`;
+        });
+        html += '</table>';
+        container.innerHTML = html;
+    }
+
+    function renderWorkerList() {
     const container = document.getElementById('workerList');
     if (allWorkers.length === 0) {
         container.innerHTML = '<p>No workers yet.</p>';
@@ -2680,7 +2764,7 @@ function updateKPIs() {
 }
 
     function updateWorkerDropdowns() {
-        const selects = ['adminSenior', 'distSenior', 'distJunior', 'dailyWorker', 'ledgerPerson', 'settlementWorker'];
+        const selects = ['adminSenior', 'distSenior', 'distJunior', 'dailyWorker', 'ledgerPerson', 'settlementWorker', 'salaryWorker'];
         selects.forEach(id => {
             const select = document.getElementById(id);
             if (!select) return;
@@ -2710,7 +2794,7 @@ function updateKPIs() {
         if (currentUser !== 'admin') { alert('Only Admin can add!'); return; }
         const date = document.getElementById('adminDate').value;
         const senior = document.getElementById('adminSenior').value;
-        const amount = parseFloat(document.getElementById('adminAmount').value);
+        const amount = getRawAmount(document.getElementById('adminAmount'));
         const note = document.getElementById('adminNote').value.trim() || 'Admin expense';
         if (!date || !senior || !amount || amount <= 0) { alert('Fill all fields.'); return; }
         db.collection('adminExpenses').add({ date, senior, amount, note, timestamp: firebase.firestore.FieldValue.serverTimestamp() })
@@ -2723,7 +2807,7 @@ function updateKPIs() {
         const date = document.getElementById('distDate').value;
         const senior = document.getElementById('distSenior').value;
         const junior = document.getElementById('distJunior').value;
-        const amount = parseFloat(document.getElementById('distAmount').value);
+        const amount = getRawAmount(document.getElementById('distAmount'));
         const note = document.getElementById('distNote').value.trim() || 'Distribution';
         if (!date || !senior || !junior || !amount || amount <= 0) { alert('Fill all fields.'); return; }
         db.collection('distributions').add({ date, senior, junior, amount, note, timestamp: firebase.firestore.FieldValue.serverTimestamp() })
@@ -2735,12 +2819,147 @@ function updateKPIs() {
         if (currentUser !== 'admin') { alert('Only Admin can add!'); return; }
         const date = document.getElementById('dailyDate').value;
         const worker = document.getElementById('dailyWorker').value;
-        const amount = parseFloat(document.getElementById('dailyAmount').value);
+        const amount = getRawAmount(document.getElementById('dailyAmount'));
         const desc = document.getElementById('dailyDesc').value.trim() || 'Expense';
         if (!date || !worker || !amount || amount <= 0) { alert('Fill all fields.'); return; }
         db.collection('dailyExpenses').add({ date, worker, amount, desc, timestamp: firebase.firestore.FieldValue.serverTimestamp() })
             .then(() => { document.getElementById('dailyAmount').value = ''; document.getElementById('dailyDesc').value = ''; })
             .catch(err => alert('Error: ' + err.message));
+    }
+
+    function handleSalaryNoteChange() {
+        const sel = document.getElementById('salaryNote');
+        const other = document.getElementById('salaryNoteOther');
+        if (!sel || !other) return;
+        if (sel.value === 'Other') {
+            other.style.display = 'block';
+            other.focus();
+        } else {
+            other.style.display = 'none';
+        }
+    }
+
+    function addSalaryPayment() {
+        if (currentUser !== 'admin') { alert('Only Admin can add!'); return; }
+        const date = document.getElementById('salaryDate').value;
+        const worker = document.getElementById('salaryWorker').value;
+        const month = document.getElementById('salaryMonth').value;
+        const amount = getRawAmount(document.getElementById('salaryAmount'));
+        const noteSel = document.getElementById('salaryNote').value;
+        const note = (noteSel === 'Other' ? document.getElementById('salaryNoteOther').value.trim() : noteSel) || 'Salary';
+        if (!date || !worker || !amount || amount <= 0) { alert('Fill all fields.'); return; }
+        db.collection('salaryPayments').add({ date, worker, month, amount, note, timestamp: firebase.firestore.FieldValue.serverTimestamp() })
+            .then(() => {
+                document.getElementById('salaryAmount').value = '';
+                document.getElementById('salaryNote').value = 'Base Salary';
+                document.getElementById('salaryNoteOther').value = '';
+                document.getElementById('salaryNoteOther').style.display = 'none';
+            })
+            .catch(err => alert('Error: ' + err.message));
+    }
+
+    function formatMonthLabel(monthStr) {
+        if (!monthStr) return '-';
+        const parts = monthStr.split('-');
+        if (parts.length !== 2) return monthStr;
+        const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        const idx = parseInt(parts[1], 10) - 1;
+        if (idx < 0 || idx > 11) return monthStr;
+        return `${monthNames[idx]} ${parts[0]}`;
+    }
+
+    function renderSalaryHistory() {
+        const container = document.getElementById('salaryHistory');
+        if (!container) return;
+        if (allSalaryPayments.length === 0) { container.innerHTML = '<p>No salary payments recorded yet.</p>'; return; }
+        const sorted = [...allSalaryPayments].sort((a, b) => a.date < b.date ? 1 : -1);
+        let html = '<table><tr><th>Date</th><th>Worker</th><th>Month</th><th>Amount</th><th>Note</th><th>Action</th></tr>';
+        sorted.forEach(e => {
+            const actionBtns = renderWorkersActionButtons('salaryPayments', e.id, e.amount, e.note, e.date, '', '', e.worker, e.note);
+            html += `<tr><td>${e.date || ''}</td><td>${escapeHtml(e.worker)}</td><td>${formatMonthLabel(e.month)}</td><td>${formatCurrency(e.amount)}</td><td>${escapeHtml(e.note || '-')}</td><td>${actionBtns}</td></tr>`;
+        });
+        html += '</table>';
+        container.innerHTML = html;
+    }
+
+    function addMonths(monthStr, n) {
+        let [y, m] = monthStr.split('-').map(Number);
+        m += n;
+        while (m > 12) { m -= 12; y++; }
+        while (m < 1) { m += 12; y--; }
+        return y + '-' + String(m).padStart(2, '0');
+    }
+
+    function buildMonthRange(startMonth, endMonth) {
+        const list = [];
+        let cur = startMonth;
+        let guard = 0;
+        while (cur <= endMonth && guard < 600) {
+            list.push(cur);
+            cur = addMonths(cur, 1);
+            guard++;
+        }
+        return list;
+    }
+
+    function populateSalarySummaryMonthOptions() {
+        const sel = document.getElementById('salarySummaryMonth');
+        if (!sel) return;
+        const now = new Date();
+        const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        const recordedMonths = allSalaryPayments.map(e => e.month).filter(Boolean);
+        let earliest = recordedMonths.length ? recordedMonths.sort()[0] : currentMonth;
+        if (earliest > currentMonth) earliest = currentMonth;
+        const months = buildMonthRange(earliest, currentMonth).reverse();
+        const prevValue = sel.value;
+        sel.innerHTML = months.map(m => `<option value="${m}">${formatMonthLabel(m)}</option>`).join('');
+        sel.value = months.includes(prevValue) ? prevValue : currentMonth;
+    }
+
+    function renderSalarySummary() {
+        const container = document.getElementById('salarySummary');
+        if (!container) return;
+        populateSalarySummaryMonthOptions();
+        const monthSel = document.getElementById('salarySummaryMonth');
+        const uptoMonth = (monthSel && monthSel.value) || (new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0'));
+        if (allWorkers.length === 0) { container.innerHTML = '<p>No workers yet.</p>'; return; }
+
+        let html = `<p style="font-size:12px; color:#6b7280; margin-bottom:6px;">Running balance up to: <strong>${formatMonthLabel(uptoMonth)}</strong></p>`;
+        html += '<table><tr><th>Worker</th><th>Base Salary</th><th>Running Due</th><th>Pending Months</th></tr>';
+        let grandDue = 0;
+
+        allWorkers.forEach(w => {
+            const base = w.baseSalary || 0;
+            const payments = allSalaryPayments.filter(e => e.worker === w.name);
+            const recordedMonths = payments.map(e => e.month).filter(Boolean);
+            let pendingList = [];
+            let runningDue = 0;
+
+            if (base > 0) {
+                const startMonth = recordedMonths.length ? recordedMonths.sort()[0] : uptoMonth;
+                const monthsList = buildMonthRange(startMonth <= uptoMonth ? startMonth : uptoMonth, uptoMonth);
+                monthsList.forEach(month => {
+                    const paidInMonth = payments.filter(e => e.month === month).reduce((s, e) => s + e.amount, 0);
+                    const dueInMonth = base - paidInMonth;
+                    runningDue += dueInMonth;
+                    if (dueInMonth > 0) pendingList.push(`${formatMonthLabel(month)} (${formatCurrency(dueInMonth)})`);
+                });
+            }
+
+            grandDue += runningDue;
+            const pendingText = pendingList.length ? pendingList.join(', ') : (runningDue < 0 ? '✅ Overpaid / Advance' : '✅ Clear');
+            html += `<tr>
+                <td><strong>${w.name}</strong></td>
+                <td>${formatCurrency(base)}</td>
+                <td class="${runningDue > 0 ? 'negative' : runningDue < 0 ? 'positive' : ''}">${formatCurrency(runningDue)}</td>
+                <td style="font-size:11.5px;">${pendingText}</td>
+            </tr>`;
+        });
+
+        html += `<tr style="font-weight:bold; background:#f0f4ff;"><td colspan="2">Total Running Due</td><td colspan="2">${formatCurrency(grandDue)}</td></tr>`;
+        html += '</table>';
+        html += '<p style="font-size:11px; color:#6b7280; margin-top:6px;">Any unpaid amount from a previous month automatically carries forward here until fully paid. Once cleared, it disappears from Pending Months.</p>';
+        container.innerHTML = html;
     }
 
     // ============================================================
@@ -2759,7 +2978,7 @@ function updateKPIs() {
             if (bal > 0) { status = '🟢 To Return'; cls = 'positive'; }
             else if (bal < 0) { status = '🔴 Receivable'; cls = 'negative'; }
             else { status = '⚪ Settled'; cls = ''; }
-            html += `<tr><td><strong>${p}</strong></td><td>${formatCurrency(b.totalIn)}</td><td>${formatCurrency(b.totalOut)}</td><td class="${cls}">${formatCurrency(bal)}</td><td>${status}</td></tr>`;
+            html += `<tr><td><strong>${escapeHtml(p)}</strong></td><td>${formatCurrency(b.totalIn)}</td><td>${formatCurrency(b.totalOut)}</td><td class="${cls}">${formatCurrency(bal)}</td><td>${status}</td></tr>`;
         });
         html += '</table>';
         container.innerHTML = html;
@@ -2814,7 +3033,7 @@ function updateKPIs() {
                 t.collection, t.id, t.amount, t.note || t.desc || '', t.date,
                 t.senior || '', t.junior || '', t.worker || '', t.desc || ''
             );
-            html += `<tr><td>${t.date}</td><td>${t.type}</td><td>${t.from}</td><td>${t.to}</td><td>${formatCurrency(t.amount)}</td><td>${t.note || t.desc || ''}</td><td>${actionBtns}</td></tr>`;
+            html += `<tr><td>${t.date}</td><td>${t.type}</td><td>${escapeHtml(t.from)}</td><td>${escapeHtml(t.to)}</td><td>${formatCurrency(t.amount)}</td><td>${escapeHtml(t.note || t.desc || '')}</td><td>${actionBtns}</td></tr>`;
         });
         html += '</table>';
         container.innerHTML = html;
@@ -2824,7 +3043,7 @@ function updateKPIs() {
         const name = document.getElementById('ledgerPerson').value;
         const container = document.getElementById('ledgerDisplay');
         if (!name) { container.innerHTML = '<p>Select a person.</p>'; return; }
-        let html = `<h4>${name}</h4>`;
+        let html = `<h4>${escapeHtml(name)}</h4>`;
         const txs = [];
         allAdminExpenses.forEach(e => {
             if (e.senior === name) txs.push({ 
@@ -2861,7 +3080,7 @@ function updateKPIs() {
                     t.collection, t.id, t.amount, t.note || t.desc || '', t.date,
                     t.senior || '', t.junior || '', t.worker || '', t.desc || ''
                 );
-                html += `<tr><td>${t.date}</td><td>${t.desc}</td><td class="${cls}">${sign} ${formatCurrency(t.amount)}</td><td>${t.type === 'in' ? 'Received' : 'Given/Spent'}</td><td>${actionBtns}</td></tr>`;
+                html += `<tr><td>${t.date}</td><td>${escapeHtml(t.desc)}</td><td class="${cls}">${sign} ${formatCurrency(t.amount)}</td><td>${t.type === 'in' ? 'Received' : 'Given/Spent'}</td><td>${actionBtns}</td></tr>`;
             });
             html += `<tr style="font-weight:bold; background:#f0f4ff;"><td colspan="2">Summary</td>
                 <td>Total In: ${formatCurrency(totalIn)}<br>Total Out: ${formatCurrency(totalOut)}<br><span class="${totalIn-totalOut > 0 ? 'positive' : 'negative'}">Balance: ${formatCurrency(totalIn-totalOut)}</span></td>
@@ -2888,7 +3107,7 @@ function updateKPIs() {
         allDailyExpenses.forEach(e => {
             if (e.worker === name) txs.push({ date: e.date, desc: 'Daily Expense', amount: e.amount, type: 'out', note: e.desc || '' });
         });
-        if (txs.length === 0) {
+        if (txs.length === 0 && allSalaryPayments.filter(e => e.worker === name).length === 0) {
             alert('No transactions found for this person.');
             return;
         }
@@ -2899,23 +3118,51 @@ function updateKPIs() {
             else { totalOut += t.amount; running -= t.amount; }
             rows += `<tr>
                 <td>${t.date || ''}</td>
-                <td>${t.desc}</td>
-                <td>${t.note || '-'}</td>
+                <td>${escapeHtml(t.desc)}</td>
+                <td>${escapeHtml(t.note || '-')}</td>
                 <td style="color:#0b7e3d; font-weight:500;">${t.type === 'in' ? formatCurrency(t.amount) : ''}</td>
                 <td style="color:#b22234; font-weight:500;">${t.type === 'out' ? formatCurrency(t.amount) : ''}</td>
                 <td style="font-weight:600;">${formatCurrency(running)}</td>
             </tr>`;
         });
         const balance = totalIn - totalOut;
+        const totalSalary = allSalaryPayments.filter(e => e.worker === name).reduce((sum, e) => sum + e.amount, 0);
+        const nowW = new Date();
+        const currentMonthW = nowW.getFullYear() + '-' + String(nowW.getMonth() + 1).padStart(2, '0');
+        const workerObj = allWorkers.find(w => w.name === name);
+        const baseSalary = workerObj ? (workerObj.baseSalary || 0) : 0;
+        let runningDueW = 0, pendingListW = [];
+        if (baseSalary > 0) {
+            const paymentsW = allSalaryPayments.filter(e => e.worker === name);
+            const recordedMonthsW = paymentsW.map(e => e.month).filter(Boolean);
+            const startMonthW = recordedMonthsW.length ? recordedMonthsW.sort()[0] : currentMonthW;
+            const monthsListW = buildMonthRange(startMonthW <= currentMonthW ? startMonthW : currentMonthW, currentMonthW);
+            monthsListW.forEach(month => {
+                const paidInMonth = paymentsW.filter(e => e.month === month).reduce((s, e) => s + e.amount, 0);
+                const dueInMonth = baseSalary - paidInMonth;
+                runningDueW += dueInMonth;
+                if (dueInMonth > 0) pendingListW.push(formatMonthLabel(month));
+            });
+        }
         const body = `
-        <p><strong>Person:</strong> ${name}</p>
+        <p><strong>Person:</strong> ${escapeHtml(name)}</p>
         <div class="summary">
             <div class="summary-item"><div class="label">💰 Total Received</div><div class="value" style="color:#0b7e3d;">${formatCurrency(totalIn)}</div></div>
             <div class="summary-item"><div class="label">💳 Total Given / Spent</div><div class="value" style="color:#b22234;">${formatCurrency(totalOut)}</div></div>
             <div class="summary-item" style="border-color: ${balance >= 0 ? '#0b7e3d' : '#b22234'};">
-                <div class="label">⚖️ Balance</div>
+                <div class="label">⚖️ Balance (Work Float)</div>
                 <div class="value ${balance > 0 ? 'positive' : balance < 0 ? 'negative' : ''}">${formatCurrency(balance)}</div>
                 <div style="font-size:11px;">${balance > 0 ? '🟢 To Return' : balance < 0 ? '🔴 Receivable' : '⚪ Settled'}</div>
+            </div>
+            <div class="summary-item" style="border-color:#16A34A;">
+                <div class="label">💵 Total Salary Paid (All Time)</div>
+                <div class="value" style="color:#16A34A;">${formatCurrency(totalSalary)}</div>
+                <div style="font-size:11px; color:#6b7280;">(Separate from work float balance)</div>
+            </div>
+            <div class="summary-item" style="border-color:#D97706;">
+                <div class="label">📅 Running Salary Due</div>
+                <div class="value ${runningDueW > 0 ? 'negative' : runningDueW < 0 ? 'positive' : ''}">${formatCurrency(runningDueW)}</div>
+                <div style="font-size:11px; color:#6b7280;">${pendingListW.length ? 'Pending: ' + pendingListW.join(', ') : (runningDueW < 0 ? 'Overpaid / Advance' : 'Clear')}</div>
             </div>
         </div>
         <h3>📋 Transaction History</h3>
@@ -3074,7 +3321,7 @@ function updateKPIs() {
         if (currentUser !== 'admin') { alert('Only Admin can add!'); return; }
         const date = document.getElementById('personalDate').value;
         const category = document.getElementById('personalCategory').value;
-        const amount = parseFloat(document.getElementById('personalAmount').value);
+        const amount = getRawAmount(document.getElementById('personalAmount'));
         const desc = document.getElementById('personalDesc').value.trim() || 'Expense';
         if (!date || !category || !amount || amount <= 0) { alert('Fill all fields.'); return; }
         if (category === '__add_new__') { alert('Please add new category first.'); return; }
@@ -3541,25 +3788,39 @@ function updateKPIs() {
     // ============================================================
     function login() {
         const pwd = document.getElementById('loginPassword').value;
-        if (pwd === ADMIN_PASSWORD) {
-            currentUser = 'admin';
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('mainApp').classList.remove('hidden');
-            document.getElementById('userRoleBadge').textContent = 'Admin (Edit)';
-            document.getElementById('viewOnlyMsg').classList.add('hidden');
-            enableEditing(true);
-            loadAllData();
-            document.getElementById('loginError').textContent = '';
-            const today = new Date();
-            const sevenDaysAgo = new Date(today);
-            sevenDaysAgo.setDate(today.getDate() - 7);
-            document.getElementById('settlementStartDate').value = sevenDaysAgo.toISOString().split('T')[0];
-            document.getElementById('settlementEndDate').value = today.toISOString().split('T')[0];
-            startAutoBackup();
-        } else {
-            document.getElementById('loginError').textContent = 'Wrong password!';
-        }
+        if (!pwd) { document.getElementById('loginError').textContent = 'Enter your password.'; return; }
+        document.getElementById('loginError').textContent = 'Checking...';
+        auth.signInWithEmailAndPassword(ADMIN_EMAIL, pwd)
+            .then(() => {
+                document.getElementById('loginError').textContent = '';
+            })
+            .catch(() => {
+                document.getElementById('loginError').textContent = 'Wrong password!';
+            });
     }
+
+    function enterAdminSession() {
+        currentUser = 'admin';
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('mainApp').classList.remove('hidden');
+        document.getElementById('userRoleBadge').textContent = 'Admin (Edit)';
+        document.getElementById('viewOnlyMsg').classList.add('hidden');
+        enableEditing(true);
+        loadAllData();
+        document.getElementById('loginError').textContent = '';
+        const today = new Date();
+        const sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(today.getDate() - 7);
+        document.getElementById('settlementStartDate').value = sevenDaysAgo.toISOString().split('T')[0];
+        document.getElementById('settlementEndDate').value = today.toISOString().split('T')[0];
+        startAutoBackup();
+    }
+
+    auth.onAuthStateChanged(user => {
+        if (user && user.email === ADMIN_EMAIL) {
+            enterAdminSession();
+        }
+    });
 
     function loginAsViewer() {
         currentUser = 'viewer';
@@ -3574,6 +3835,7 @@ function updateKPIs() {
     }
 
     function logout() {
+        auth.signOut();
         currentUser = 'viewer';
         document.getElementById('loginScreen').classList.remove('hidden');
         document.getElementById('mainApp').classList.add('hidden');
@@ -3668,6 +3930,12 @@ function updateKPIs() {
             renderAll();
         });
 
+        db.collection('salaryPayments').onSnapshot(snapshot => {
+            allSalaryPayments = [];
+            snapshot.forEach(doc => allSalaryPayments.push({ id: doc.id, ...doc.data() }));
+            renderAll();
+        });
+
         db.collection('vendors').onSnapshot(snapshot => {
     allVendors = [];
     snapshot.forEach(doc => allVendors.push({ id: doc.id, ...doc.data() }));
@@ -3705,6 +3973,9 @@ function updateKPIs() {
         renderAllTransactions();
         showLedger();
         renderDateWise();
+        renderSalaryHistory();
+        renderSalarySummary();
+        renderBaseSalaryList();
         if (document.getElementById('tab-dashboard').classList.contains('active')) renderDashboard();
     }
 
@@ -3716,6 +3987,7 @@ function updateKPIs() {
         document.getElementById('adminDate').value = today;
         document.getElementById('distDate').value = today;
         document.getElementById('dailyDate').value = today;
+        document.getElementById('salaryDate').value = today;
         document.getElementById('personalDate').value = today;
         document.getElementById('dateFilter').value = today;
         document.getElementById('txDate').value = today;
@@ -3768,12 +4040,6 @@ function renderRegisteredVendors() {
 function deleteVendor(vendorId, vendorName) {
     if (currentUser !== 'admin') {
         alert('Only Admin can delete vendors!');
-        return;
-    }
-    const pwd = prompt(`🔒 Enter Admin Password to delete vendor "${vendorName}":`);
-    if (pwd === null) return;
-    if (pwd !== ADMIN_PASSWORD) {
-        alert('❌ Wrong password! Deletion cancelled.');
         return;
     }
     if (!confirm(`⚠️ Are you sure you want to delete vendor "${vendorName}"?\n\nThis will also delete ALL their transactions.\n\nThis cannot be undone!`)) return;
