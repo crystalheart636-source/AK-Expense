@@ -1,4 +1,4 @@
-const CACHE_NAME = 'expense-v18';
+const CACHE_NAME = 'expense-v19';
 
 self.addEventListener('install', function (e) {
     self.skipWaiting();
@@ -21,10 +21,21 @@ self.addEventListener('activate', function (e) {
     self.clients.claim();
 });
 
+// NETWORK-FIRST: always try to fetch the latest file from the internet first.
+// Only fall back to the saved (cached) copy if there is no internet connection.
+// This means new GitHub/Vercel updates load automatically, with no manual
+// cache-clearing needed on any device.
 self.addEventListener('fetch', function (e) {
     e.respondWith(
-        caches.match(e.request).then(function (response) {
-            return response || fetch(e.request);
-        })
+        fetch(e.request)
+            .then(function (response) {
+                const clone = response.clone();
+                caches.open(CACHE_NAME).then(function (cache) { cache.put(e.request, clone); });
+                return response;
+            })
+            .catch(function () {
+                return caches.match(e.request);
+            })
     );
 });
+
