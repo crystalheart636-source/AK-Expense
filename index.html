@@ -979,6 +979,15 @@
         <!-- ===== TAB: WORKERS ===== -->
         <!-- ============================================================ -->
         <div id="tab-workers" class="tab-content active">
+            <!-- Workers Sub-Tab Navigation -->
+            <div style="display:flex; gap:8px; margin-bottom:16px; border-bottom:2px solid #e2e8f0;">
+                <div class="workers-subtab-btn active" data-subtab="main" onclick="switchWorkersSubTab('main')" style="padding:9px 18px; font-weight:700; font-size:13.5px; cursor:pointer; border-bottom:3px solid #2563EB; color:#2563EB;">👥 Workers</div>
+                <div class="workers-subtab-btn" data-subtab="salary" onclick="switchWorkersSubTab('salary')" style="padding:9px 18px; font-weight:700; font-size:13.5px; cursor:pointer; border-bottom:3px solid transparent; color:#64748B;">💵 Salary</div>
+            </div>
+
+            <!-- ===== SUB-TAB: WORKERS MAIN ===== -->
+            <div id="workers-subtab-main" class="workers-subtab-content">
+
             <!-- Settlement -->
             <div class="card" style="border-left: 4px solid #0891b2;">
                 <h3>📊 Settlement / Reconciliation</h3>
@@ -1048,58 +1057,16 @@
                 </div>
             </div>
 
-            <!-- Row 2: Add Daily Expense + Full Salary Section (paired - same border/color) -->
-            <div class="grid-2" style="gap:14px;">
-                <!-- Add Daily Expense (Any Worker) -->
-                <div class="card" id="dailyExpenseCard" style="border:2px solid #D97706; background:#eff6ff;">
-                    <h3>📝 Add Daily Expense (Any Worker)</h3>
-                    <div class="row">
-                        <div><label>Date</label><input type="date" id="dailyDate" /></div>
-                        <div><label>Worker</label><select id="dailyWorker"></select></div>
-                        <div><label>Amount (PKR)</label><input type="text" inputmode="decimal" id="dailyAmount" class="amount-input" placeholder="e.g. 500" oninput="formatAmountInput(this)" onkeydown="if(event.key==='Enter') addDailyExpense()" /></div>
-                        <div><label>Description</label><input type="text" id="dailyDesc" placeholder="e.g. Petrol, Lunch" onkeydown="if(event.key==='Enter') addDailyExpense()" /></div>
-                    </div>
-                    <button onclick="addDailyExpense()">✔ Add Daily Expense</button>
+            <!-- Add Daily Expense (Any Worker) -->
+            <div class="card" id="dailyExpenseCard" style="border:2px solid #D97706; background:#eff6ff;">
+                <h3>📝 Add Daily Expense (Any Worker)</h3>
+                <div class="row">
+                    <div><label>Date</label><input type="date" id="dailyDate" /></div>
+                    <div><label>Worker</label><select id="dailyWorker"></select></div>
+                    <div><label>Amount (PKR)</label><input type="text" inputmode="decimal" id="dailyAmount" class="amount-input" placeholder="e.g. 500" oninput="formatAmountInput(this)" onkeydown="if(event.key==='Enter') addDailyExpense()" /></div>
+                    <div><label>Description</label><input type="text" id="dailyDesc" placeholder="e.g. Petrol, Lunch" onkeydown="if(event.key==='Enter') addDailyExpense()" /></div>
                 </div>
-
-                <!-- Full Salary Section: Base Salary + Add Payment + History + Summary -->
-                <div class="card" id="salaryCard" style="border:2px solid #16A34A; background:#eff6ff;">
-                    <h3>💵 Salary</h3>
-
-                    <h4 style="font-size:13.5px; margin:6px 0 4px;">👷 Base Monthly Salary (Editable)</h4>
-                    <div id="baseSalaryList" style="max-height:180px; overflow-y:auto; margin-bottom:10px;">Loading...</div>
-
-                    <h4 style="font-size:13.5px; margin:10px 0 4px;">➕ Add Salary Payment</h4>
-                    <div class="row">
-                        <div><label>Date</label><input type="date" id="salaryDate" /></div>
-                        <div><label>Worker</label><select id="salaryWorker"></select></div>
-                        <div><label>For Month</label><input type="month" id="salaryMonth" /></div>
-                        <div><label>Amount (PKR)</label><input type="text" inputmode="decimal" id="salaryAmount" class="amount-input" placeholder="e.g. 30,000" oninput="formatAmountInput(this)" onkeydown="if(event.key==='Enter') addSalaryPayment()" /></div>
-                        <div>
-                            <label>Note</label>
-                            <select id="salaryNote" onchange="handleSalaryNoteChange()">
-                                <option value="Base Salary">Base Salary</option>
-                                <option value="Advance Salary">Advance Salary</option>
-                                <option value="Partial Salary">Partial Salary</option>
-                                <option value="Full Salary">Full Salary</option>
-                                <option value="Bonus">Bonus</option>
-                                <option value="Other">Other (type below)</option>
-                            </select>
-                            <input type="text" id="salaryNoteOther" placeholder="Type custom note" onkeydown="if(event.key==='Enter') addSalaryPayment()" style="display:none; margin-top:6px;" />
-                        </div>
-                    </div>
-                    <button onclick="addSalaryPayment()" style="background:#16A34A;">✔ Add Salary Payment</button>
-
-                    <h4 style="font-size:13.5px; margin:14px 0 4px;">📊 Due / Remaining (Running)</h4>
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                        <label style="font-size:12.5px; margin:0;">As of Month:</label>
-                        <select id="salarySummaryMonth" onchange="renderSalarySummary()" style="padding:4px 8px; font-size:12.5px; min-height:30px;"></select>
-                    </div>
-                    <div id="salarySummary" style="max-height:260px; overflow-y:auto; margin-bottom:10px;">Loading...</div>
-
-                    <h4 style="font-size:13.5px; margin:10px 0 4px;">📜 Salary History</h4>
-                    <div id="salaryHistory" style="max-height:220px; overflow-y:auto;">Loading...</div>
-                </div>
+                <button onclick="addDailyExpense()">✔ Add Daily Expense</button>
             </div>
 
             <!-- Workers Dashboard -->
@@ -1139,6 +1106,53 @@
 		<div style="margin-top:16px; text-align:right;">
    		 <button onclick="resetWorkersData()" class="btn-danger" style="width:auto; padding:6px 10px; font-size:13.5px;">🗑 Reset Workers</button>
 		</div>
+
+            </div>
+            <!-- ===== END SUB-TAB: WORKERS MAIN ===== -->
+
+            <!-- ===== SUB-TAB: SALARY ===== -->
+            <div id="workers-subtab-salary" class="workers-subtab-content" style="display:none;">
+                <!-- Full Salary Section: Base Salary + Add Payment + History + Summary -->
+                <div class="card" id="salaryCard" style="border:2px solid #16A34A; background:#eff6ff;">
+                    <h3>💵 Salary</h3>
+
+                    <h4 style="font-size:13.5px; margin:6px 0 4px;">👷 Base Monthly Salary (Editable)</h4>
+                    <div id="baseSalaryList" style="max-height:180px; overflow-y:auto; margin-bottom:10px;">Loading...</div>
+
+                    <h4 style="font-size:13.5px; margin:10px 0 4px;">➕ Add Salary Payment</h4>
+                    <div class="row">
+                        <div><label>Date</label><input type="date" id="salaryDate" /></div>
+                        <div><label>Worker</label><select id="salaryWorker"></select></div>
+                        <div><label>For Month</label><input type="month" id="salaryMonth" /></div>
+                        <div><label>Amount (PKR)</label><input type="text" inputmode="decimal" id="salaryAmount" class="amount-input" placeholder="e.g. 30,000" oninput="formatAmountInput(this)" onkeydown="if(event.key==='Enter') addSalaryPayment()" /></div>
+                        <div>
+                            <label>Note</label>
+                            <select id="salaryNote" onchange="handleSalaryNoteChange()">
+                                <option value="Base Salary">Base Salary</option>
+                                <option value="Advance Salary">Advance Salary</option>
+                                <option value="Partial Salary">Partial Salary</option>
+                                <option value="Full Salary">Full Salary</option>
+                                <option value="Bonus">Bonus</option>
+                                <option value="Other">Other (type below)</option>
+                            </select>
+                            <input type="text" id="salaryNoteOther" placeholder="Type custom note" onkeydown="if(event.key==='Enter') addSalaryPayment()" style="display:none; margin-top:6px;" />
+                        </div>
+                    </div>
+                    <button onclick="addSalaryPayment()" style="background:#16A34A;">✔ Add Salary Payment</button>
+
+                    <h4 style="font-size:13.5px; margin:14px 0 4px;">📊 Due / Remaining (Running)</h4>
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                        <label style="font-size:12.5px; margin:0;">As of Month:</label>
+                        <select id="salarySummaryMonth" onchange="renderSalarySummary()" style="padding:4px 8px; font-size:12.5px; min-height:30px;"></select>
+                    </div>
+                    <div id="salarySummary" style="max-height:260px; overflow-y:auto; margin-bottom:10px;">Loading...</div>
+
+                    <h4 style="font-size:13.5px; margin:10px 0 4px;">📜 Salary History</h4>
+                    <div id="salaryHistory" style="max-height:220px; overflow-y:auto;">Loading...</div>
+                </div>
+            </div>
+            <!-- ===== END SUB-TAB: SALARY ===== -->
+
         </div>
 
         <!-- ============================================================ -->
@@ -1624,6 +1638,18 @@
         if (tab === 'vendors') renderVendors();
         if (tab === 'personal') renderPersonal();
         if (tab === 'dashboard') renderDashboard();
+    }
+
+    function switchWorkersSubTab(sub) {
+        document.querySelectorAll('.workers-subtab-content').forEach(el => el.style.display = 'none');
+        document.getElementById('workers-subtab-' + sub).style.display = 'block';
+        document.querySelectorAll('.workers-subtab-btn').forEach(el => {
+            const isActive = el.dataset.subtab === sub;
+            el.classList.toggle('active', isActive);
+            el.style.borderBottomColor = isActive ? '#2563EB' : 'transparent';
+            el.style.color = isActive ? '#2563EB' : '#64748B';
+        });
+        if (sub === 'salary') { renderSalaryHistory(); renderSalarySummary(); renderBaseSalaryList(); }
     }
 
     // ============================================================
