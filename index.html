@@ -1112,6 +1112,21 @@
 
             <!-- ===== SUB-TAB: SALARY ===== -->
             <div id="workers-subtab-salary" class="workers-subtab-content" style="display:none;">
+
+                <!-- Edit Form (Salary) -->
+                <div id="salaryEditForm" class="card hidden edit-form-container">
+                    <h3>✏️ Edit Salary Payment</h3>
+                    <div class="row">
+                        <div><label>Date</label><input type="date" id="salaryEditDate" /></div>
+                        <div><label>Amount</label><input type="text" inputmode="decimal" id="salaryEditAmount" class="amount-input" oninput="formatAmountInput(this)" /></div>
+                        <div><label>Note</label><input type="text" id="salaryEditNote" /></div>
+                        <div style="flex:0.5; display:flex; gap:6px; align-items:flex-end;">
+                            <button onclick="saveSalaryEdit()" class="btn-save" style="margin-top:22px;">💾 Save</button>
+                            <button onclick="cancelSalaryEdit()" class="btn-cancel" style="margin-top:22px;">✖</button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Full Salary Section: Base Salary + Add Payment + History + Summary -->
                 <div class="card" id="salaryCard" style="border:2px solid #16A34A; background:#eff6ff;">
                     <h3>💵 Salary</h3>
@@ -1698,6 +1713,49 @@
     function cancelWorkersEdit() {
         document.getElementById('workersEditForm').classList.add('hidden');
         workersEditData = null;
+    }
+
+    // ============================================================
+    // SALARY EDIT FUNCTIONS (dedicated, lives inside Salary sub-tab)
+    // ============================================================
+    let salaryEditData = null;
+
+    function startSalaryEdit(id, amount, note, date, worker) {
+        salaryEditData = { id, amount, note, date, worker };
+        document.getElementById('salaryEditForm').classList.remove('hidden');
+        document.getElementById('salaryEditDate').value = date || '';
+        document.getElementById('salaryEditAmount').value = formatNumber(amount) || '';
+        document.getElementById('salaryEditNote').value = note || '';
+        document.getElementById('salaryEditForm').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function saveSalaryEdit() {
+        if (!salaryEditData) { alert('No salary entry being edited.'); return; }
+        const newDate = document.getElementById('salaryEditDate').value;
+        const newAmount = getRawAmount(document.getElementById('salaryEditAmount'));
+        const newNote = document.getElementById('salaryEditNote').value.trim();
+        if (!newDate || !newAmount || newAmount <= 0) {
+            alert('Please fill all fields correctly.');
+            return;
+        }
+        db.collection('salaryPayments').doc(salaryEditData.id).update({
+            date: newDate, amount: newAmount, note: newNote || 'Salary', worker: salaryEditData.worker
+        })
+            .then(() => { alert('✅ Updated!'); cancelSalaryEdit(); })
+            .catch(err => alert('❌ Error: ' + err.message));
+    }
+
+    function cancelSalaryEdit() {
+        document.getElementById('salaryEditForm').classList.add('hidden');
+        salaryEditData = null;
+    }
+
+    function renderSalaryActionButtons(id, amount, note, date, worker) {
+        if (currentUser !== 'admin') return '';
+        return `<div class="action-btns">
+            <button onclick="startSalaryEdit('${id}',${amount},'${(note || '').replace(/'/g, "\\'")}','${date}','${(worker || '').replace(/'/g, "\\'")}')" class="btn-edit btn-small">✏️</button>
+            <button onclick="deleteTransaction('salaryPayments','${id}')" class="btn-delete btn-small">🗑️</button>
+        </div>`;
     }
 
     // ============================================================
@@ -2902,7 +2960,7 @@ function updateKPIs() {
         const sorted = [...allSalaryPayments].sort((a, b) => a.date < b.date ? 1 : -1);
         let html = '<table><tr><th>Date</th><th>Worker</th><th>Month</th><th>Amount</th><th>Note</th><th>Action</th></tr>';
         sorted.forEach(e => {
-            const actionBtns = renderWorkersActionButtons('salaryPayments', e.id, e.amount, e.note, e.date, '', '', e.worker, e.note);
+            const actionBtns = renderSalaryActionButtons(e.id, e.amount, e.note, e.date, e.worker);
             html += `<tr><td>${e.date || ''}</td><td>${escapeHtml(e.worker)}</td><td>${formatMonthLabel(e.month)}</td><td>${formatCurrency(e.amount)}</td><td>${escapeHtml(e.note || '-')}</td><td>${actionBtns}</td></tr>`;
         });
         html += '</table>';
@@ -3871,6 +3929,7 @@ function updateKPIs() {
         cancelWorkersEdit();
         cancelVendorsEdit();
         cancelPersonalEdit();
+        cancelSalaryEdit();
     }
 
     function enableEditing(enable) {
