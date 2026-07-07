@@ -973,6 +973,7 @@
         <button class="sidebar-btn active" onclick="switchTab('workers')"><span class="icon">👷</span> Workers</button>
         <button class="sidebar-btn" onclick="switchTab('vendors')"><span class="icon">🏪</span> Vendors</button>
         <button class="sidebar-btn" onclick="switchTab('personal')"><span class="icon">👤</span> Personal</button>
+        <button class="sidebar-btn" onclick="switchTab('companies')"><span class="icon">🏢</span> Companies</button>
         <button class="sidebar-btn" onclick="switchTab('dashboard')"><span class="icon">📊</span> Dashboard</button>
         <div class="sidebar-footer">
             <span id="userRoleBadge" class="badge" style="background:rgba(255,255,255,0.2);">Viewer</span>
@@ -1067,6 +1068,7 @@
                     <div class="row">
                         <div><label>Date</label><input type="date" id="adminDate" /></div>
                         <div><label>Senior</label><select id="adminSenior"></select></div>
+                        <div><label>Company</label><select id="adminCompany"><option value="AK">AK</option><option value="KB">KB</option></select></div>
                         <div><label>Amount (PKR)</label><input type="text" inputmode="decimal" id="adminAmount" class="amount-input" placeholder="e.g. 12,000" oninput="formatAmountInput(this)" onkeydown="if(event.key==='Enter') addAdminExpense()" /></div>
                         <div><label>Note</label><input type="text" id="adminNote" placeholder="Daily expense" onkeydown="if(event.key==='Enter') addAdminExpense()" /></div>
                     </div>
@@ -1253,12 +1255,16 @@
             <select id="txVendor" style="padding:5px 8px; font-size:13px; min-height:32px;"><option value="">Select...</option></select>
         </div>
         <div><label style="font-size:13px;">Type</label>
-            <select id="txType" style="padding:5px 8px; font-size:13px; min-height:32px;">
+            <select id="txType" style="padding:5px 8px; font-size:13px; min-height:32px;" onchange="handleTxTypeChange()">
                 <option value="purchase">Purchase</option>
                 <option value="payment">Payment</option>
                 <option value="return">Return</option>
                 <option value="discount">Discount</option>
+                <option value="receipt">Payment Received (from Vendor)</option>
             </select>
+        </div>
+        <div id="txCompanyWrap" style="display:none;"><label style="font-size:13px;">For Company</label>
+            <select id="txCompany" style="padding:5px 8px; font-size:13px; min-height:32px;"><option value="AK">AK</option><option value="KB">KB</option></select>
         </div>
         <div><label style="font-size:13px;">Amount</label>
             <input type="text" id="txAmount" placeholder="0.00" class="amount-input" style="padding:5px 8px; font-size:13px; min-height:32px;" oninput="formatAmountInput(this)" />
@@ -1438,12 +1444,11 @@
                 <h3>➕ Add Personal Expense</h3>
                 <div class="row">
                     <div><label>Date</label><input type="date" id="personalDate" /></div>
-                    <div><label>Category</label>
-                        <select id="personalCategory" onchange="checkCategoryAddNew()"></select>
-                        <div id="categoryAddNewContainer" class="hidden inline-add">
-                            <input type="text" id="categoryAddNewInput" placeholder="Enter category name" />
-                            <button onclick="addNewCategory()" class="btn-success">Add</button>
-                        </div>
+                    <div><label>Company</label>
+                        <select id="personalCompany">
+                            <option value="AK">AK</option>
+                            <option value="KB">KB</option>
+                        </select>
                     </div>
                     <div><label>Amount (PKR)</label><input type="text" inputmode="decimal" id="personalAmount" class="amount-input" placeholder="e.g. 500" oninput="formatAmountInput(this)" onkeydown="if(event.key==='Enter') addPersonalExpense()" /></div>
                     <div><label>Description</label><input type="text" id="personalDesc" placeholder="e.g. Lunch, Petrol" onkeydown="if(event.key==='Enter') addPersonalExpense()" /></div>
@@ -1467,6 +1472,42 @@
 		<div style="margin-top:16px; text-align:right;">
     		<button onclick="resetPersonalData()" class="btn-danger" style="width:auto; padding:6px 8px; font-size:13.5px;">🗑 Reset Personal</button>
 		</div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- ===== TAB: COMPANIES ===== -->
+        <!-- ============================================================ -->
+        <div id="tab-companies" class="tab-content">
+            <div class="card" style="border-left: 4px solid #7C3AED;">
+                <h3>🏢 Companies (AK / KB)</h3>
+                <p style="color:#6b7280; font-size:13px;">Company-wise cash flow: opening balance, worker payments (outflow), vendor receipts (inflow), and personal expenses (outflow).</p>
+            </div>
+
+            <div class="grid-2" style="gap:14px;">
+                <div class="card" id="companyCard-AK" style="border:2px solid #7C3AED; background:#f5f3ff;">
+                    <h3>🏢 AK</h3>
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                        <label style="font-size:12.5px; margin:0;">Opening Balance:</label>
+                        <span id="companyBalanceDisplay-AK" style="font-weight:700;"></span>
+                        <button class="btn btn-sm btn-outline" style="font-size:11px; padding:3px 8px;" onclick="editCompanyBalanceRow('AK')">✏️ Edit</button>
+                    </div>
+                    <div style="font-size:15px; font-weight:800; margin-bottom:6px;">Current Balance: <span id="companyRunningBalance-AK" class="positive"></span></div>
+                    <h4 style="font-size:13px; margin:10px 0 4px;">📜 History</h4>
+                    <div id="companyHistory-AK" style="max-height:320px; overflow-y:auto;">Loading...</div>
+                </div>
+
+                <div class="card" id="companyCard-KB" style="border:2px solid #7C3AED; background:#f5f3ff;">
+                    <h3>🏢 KB</h3>
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                        <label style="font-size:12.5px; margin:0;">Opening Balance:</label>
+                        <span id="companyBalanceDisplay-KB" style="font-weight:700;"></span>
+                        <button class="btn btn-sm btn-outline" style="font-size:11px; padding:3px 8px;" onclick="editCompanyBalanceRow('KB')">✏️ Edit</button>
+                    </div>
+                    <div style="font-size:15px; font-weight:800; margin-bottom:6px;">Current Balance: <span id="companyRunningBalance-KB" class="positive"></span></div>
+                    <h4 style="font-size:13px; margin:10px 0 4px;">📜 History</h4>
+                    <div id="companyHistory-KB" style="max-height:320px; overflow-y:auto;">Loading...</div>
+                </div>
+            </div>
         </div>
 
         <!-- ============================================================ -->
@@ -1498,12 +1539,16 @@
             <div><label>Date</label><input type="date" id="modalTxDate" value="2026-06-30" /></div>
             <div><label>Vendor</label><select id="modalTxVendor"><option value="">Select...</option></select></div>
             <div><label>Type</label>
-                <select id="modalTxType">
+                <select id="modalTxType" onchange="handleModalTxTypeChange()">
                     <option value="purchase">Purchase</option>
                     <option value="payment">Payment</option>
                     <option value="return">Return</option>
                     <option value="discount">Discount</option>
+                    <option value="receipt">Payment Received (from Vendor)</option>
                 </select>
+            </div>
+            <div id="modalTxCompanyWrap" style="display:none;"><label>For Company</label>
+                <select id="modalTxCompany"><option value="AK">AK</option><option value="KB">KB</option></select>
             </div>
             <div><label>Amount</label><input type="text" inputmode="decimal" id="modalTxAmount" class="amount-input" placeholder="0.00" oninput="formatAmountInput(this)" /></div>
             <div><label>Invoice #</label><input type="text" id="modalTxInvoice" placeholder="INV-001" /></div>
@@ -1682,6 +1727,7 @@
         document.querySelector(`.sidebar-btn[onclick="switchTab('${tab}')"]`).classList.add('active');
         if (tab === 'vendors') renderVendors();
         if (tab === 'personal') renderPersonal();
+        if (tab === 'companies') renderCompanies();
         if (tab === 'dashboard') renderDashboard();
     }
 
@@ -2054,6 +2100,20 @@
         }).catch(err => alert('Error: ' + err.message));
     }
 
+    function handleTxTypeChange() {
+        const sel = document.getElementById('txType');
+        const wrap = document.getElementById('txCompanyWrap');
+        if (!sel || !wrap) return;
+        wrap.style.display = sel.value === 'receipt' ? 'block' : 'none';
+    }
+
+    function handleModalTxTypeChange() {
+        const sel = document.getElementById('modalTxType');
+        const wrap = document.getElementById('modalTxCompanyWrap');
+        if (!sel || !wrap) return;
+        wrap.style.display = sel.value === 'receipt' ? 'block' : 'none';
+    }
+
     function submitTransaction() {
         if (currentUser !== 'admin') { alert('Only Admin can add transactions!'); return; }
         const date = document.getElementById('txDate').value;
@@ -2062,11 +2122,13 @@
         const amount = getRawAmount(document.getElementById('txAmount'));
         const ref = document.getElementById('txRef').value;
         const note = document.getElementById('txNotes').value;
+        const company = txType === 'receipt' ? document.getElementById('txCompany').value : null;
 
         if (!vendor || !amount || amount <= 0) { alert('Please fill all required fields.'); return; }
+        if (txType === 'receipt' && !company) { alert('Please select which company received this payment.'); return; }
 
         db.collection('vendorTransactions').add({
-            date, vendor, txType, amount, ref, note,
+            date, vendor, txType, amount, ref, note, company,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => {
             alert('✅ Transaction recorded!');
@@ -2084,11 +2146,13 @@
         const amount = getRawAmount(document.getElementById('modalTxAmount'));
         const invoice = document.getElementById('modalTxInvoice').value;
         const note = document.getElementById('modalTxNote').value;
+        const company = txType === 'receipt' ? document.getElementById('modalTxCompany').value : null;
 
         if (!vendor || !amount || amount <= 0) { alert('Please fill all required fields.'); return; }
+        if (txType === 'receipt' && !company) { alert('Please select which company received this payment.'); return; }
 
         db.collection('vendorTransactions').add({
-            date, vendor, txType, amount, invoice, note,
+            date, vendor, txType, amount, invoice, note, company,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => {
             alert('✅ Transaction recorded!');
@@ -2227,12 +2291,13 @@ function renderVendorSummary() {
             else if (isCredit) { credit = t.amount; running -= t.amount; }
             else { debit = t.amount; running += t.amount; }
 
-            const actionBtns = renderVendorsActionButtons('vendorTransactions', t.id, t.amount, t.note || t.txType, t.date);
+            const noteDisplay = (t.note || t.txType || '') + (t.txType === 'receipt' && t.company ? ` (${t.company})` : '');
+            const actionBtns = renderVendorsActionButtons('vendorTransactions', t.id, t.amount, noteDisplay, t.date);
 
             html += `<tr>
                 <td>${t.date || ''}</td>
                 <td>${escapeHtml(t.ref || t.invoice || '-')}</td>
-                <td>${escapeHtml(t.note || t.txType || '')}</td>
+                <td>${escapeHtml(noteDisplay)}</td>
                 <td class="debit">${debit ? formatCurrency(debit) : ''}</td>
                 <td class="credit">${credit ? formatCurrency(credit) : ''}</td>
                 <td class="balance">${formatCurrency(running)}</td>
@@ -2277,7 +2342,7 @@ function renderVendorSummary() {
             txHtml += `<tr>
                 <td>${t.date || ''}</td>
                 <td>${t.ref || t.invoice || '-'}</td>
-                <td>${t.note || t.txType || ''}</td>
+                <td>${(t.note || t.txType || '') + (t.txType === 'receipt' && t.company ? ` (${t.company})` : '')}</td>
                 <td style="color:#0b7e3d; font-weight:500;">${debit ? formatCurrency(debit) : ''}</td>
                 <td style="color:#b22234; font-weight:500;">${credit ? formatCurrency(credit) : ''}</td>
                 <td style="font-weight:600;">${formatCurrency(running)}</td>
@@ -2640,7 +2705,7 @@ function renderVendorSummary() {
     
     let html = '';
     sorted.forEach(t => {
-        const typeMap = { purchase: 'Purchase', payment: 'Payment', return: 'Return', discount: 'Discount' };
+        const typeMap = { purchase: 'Purchase', payment: 'Payment', return: 'Return', discount: 'Discount', receipt: 'Payment Received' };
         const actionBtns = renderVendorsActionButtons('vendorTransactions', t.id, t.amount, t.note || t.txType, t.date);
         html += `<tr>
             <td style="padding:6px 10px; border-bottom:1px solid #e2e8f0;">${t.date || ''}</td>
@@ -2909,10 +2974,11 @@ function updateKPIs() {
         if (currentUser !== 'admin') { alert('Only Admin can add!'); return; }
         const date = document.getElementById('adminDate').value;
         const senior = document.getElementById('adminSenior').value;
+        const company = document.getElementById('adminCompany').value;
         const amount = getRawAmount(document.getElementById('adminAmount'));
         const note = document.getElementById('adminNote').value.trim() || 'Admin expense';
         if (!date || !senior || !amount || amount <= 0) { alert('Fill all fields.'); return; }
-        db.collection('adminExpenses').add({ date, senior, amount, note, timestamp: firebase.firestore.FieldValue.serverTimestamp() })
+        db.collection('adminExpenses').add({ date, senior, company, amount, note, timestamp: firebase.firestore.FieldValue.serverTimestamp() })
             .then(() => { document.getElementById('adminAmount').value = ''; document.getElementById('adminNote').value = ''; })
             .catch(err => alert('Error: ' + err.message));
     }
@@ -3129,7 +3195,7 @@ function updateKPIs() {
         const container = document.getElementById('allTransactions');
         const all = [];
         allAdminExpenses.forEach(e => all.push({ 
-            type: 'Admin→Senior', date: e.date, from: 'Admin', to: e.senior, amount: e.amount, note: e.note,
+            type: 'Admin→Senior', date: e.date, from: 'Admin' + (e.company ? ` (${e.company})` : ''), to: e.senior, amount: e.amount, note: e.note,
             id: e.id, collection: 'adminExpenses', senior: e.senior
         }));
         allDistributions.forEach(e => all.push({ 
@@ -3162,7 +3228,7 @@ function updateKPIs() {
         const txs = [];
         allAdminExpenses.forEach(e => {
             if (e.senior === name) txs.push({ 
-                id: e.id, collection: 'adminExpenses', date: e.date, desc: 'Received from Admin', 
+                id: e.id, collection: 'adminExpenses', date: e.date, desc: 'Received from Admin' + (e.company ? ` (${e.company})` : ''), 
                 amount: e.amount, type: 'in', note: e.note, senior: e.senior, order: e.timestamp || e.date
             });
         });
@@ -3213,7 +3279,7 @@ function updateKPIs() {
         }
         const txs = [];
         allAdminExpenses.forEach(e => {
-            if (e.senior === name) txs.push({ date: e.date, desc: 'Received from Admin', amount: e.amount, type: 'in', note: e.note || '' });
+            if (e.senior === name) txs.push({ date: e.date, desc: 'Received from Admin' + (e.company ? ` (${e.company})` : ''), amount: e.amount, type: 'in', note: e.note || '' });
         });
         allDistributions.forEach(e => {
             if (e.senior === name) txs.push({ date: e.date, desc: `Paid to ${e.junior}`, amount: e.amount, type: 'out', note: e.note || '' });
@@ -3387,61 +3453,15 @@ function updateKPIs() {
     // ============================================================
     // PERSONAL FUNCTIONS
     // ============================================================
-    function checkCategoryAddNew() {
-        const select = document.getElementById('personalCategory');
-        const container = document.getElementById('categoryAddNewContainer');
-        if (select.value === '__add_new__') {
-            container.classList.remove('hidden');
-        } else {
-            container.classList.add('hidden');
-        }
-    }
-
-    function addNewCategory() {
-        const input = document.getElementById('categoryAddNewInput');
-        const name = input.value.trim();
-        if (!name) { alert('Enter category name.'); return; }
-        if (allCategories.includes(name)) { alert('Category already exists!'); return; }
-        allCategories.push(name);
-        db.collection('categories').doc('all').set({ list: allCategories })
-            .then(() => {
-                input.value = '';
-                document.getElementById('categoryAddNewContainer').classList.add('hidden');
-                updateCategoryDropdown();
-                document.getElementById('personalCategory').value = name;
-                alert('✅ Category added!');
-            })
-            .catch(err => alert('Error: ' + err.message));
-    }
-
-    function updateCategoryDropdown() {
-        const select = document.getElementById('personalCategory');
-        const currentVal = select.value;
-        select.innerHTML = '';
-        allCategories.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c;
-            opt.textContent = c;
-            select.appendChild(opt);
-        });
-        const addOpt = document.createElement('option');
-        addOpt.value = '__add_new__';
-        addOpt.textContent = '➕ Add New...';
-        addOpt.className = 'add-new-option';
-        select.appendChild(addOpt);
-        if (currentVal && allCategories.includes(currentVal)) select.value = currentVal;
-    }
-
     function addPersonalExpense() {
         if (currentUser !== 'admin') { alert('Only Admin can add!'); return; }
         const date = document.getElementById('personalDate').value;
-        const category = document.getElementById('personalCategory').value;
+        const company = document.getElementById('personalCompany').value;
         const amount = getRawAmount(document.getElementById('personalAmount'));
         const desc = document.getElementById('personalDesc').value.trim() || 'Expense';
-        if (!date || !category || !amount || amount <= 0) { alert('Fill all fields.'); return; }
-        if (category === '__add_new__') { alert('Please add new category first.'); return; }
+        if (!date || !company || !amount || amount <= 0) { alert('Fill all fields.'); return; }
         db.collection('personalExpenses').add({
-            date, category, amount, desc,
+            date, company, amount, desc,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         })
         .then(() => {
@@ -3452,7 +3472,6 @@ function updateKPIs() {
     }
 
     function renderPersonal() {
-        updateCategoryDropdown();
         renderPersonalDateWise();
 
         const container = document.getElementById('personalSummary');
@@ -3464,20 +3483,20 @@ function updateKPIs() {
         const today = now.toISOString().split('T')[0];
         const month = today.substring(0, 7);
         let todayTotal = 0, monthTotal = 0;
-        const catTotals = {};
+        const companyTotals = {};
         allPersonalExpenses.forEach(e => {
             if (e.date === today) todayTotal += e.amount;
             if (e.date.startsWith(month)) monthTotal += e.amount;
-            if (!catTotals[e.category]) catTotals[e.category] = 0;
-            catTotals[e.category] += e.amount;
+            if (!companyTotals[e.company]) companyTotals[e.company] = 0;
+            companyTotals[e.company] += e.amount;
         });
         let html = `<div class="settlement-summary">
             <div class="settlement-item"><div class="label">📅 Today</div><div class="value">${formatCurrency(todayTotal)}</div></div>
             <div class="settlement-item"><div class="label">📆 This Month</div><div class="value">${formatCurrency(monthTotal)}</div></div>
         </div>`;
-        html += '<h4 style="margin-top:8px;">Category-wise</h4><table><tr><th>Category</th><th>Total</th></tr>';
-        Object.keys(catTotals).sort().forEach(c => {
-            html += `<tr><td>${c}</td><td>${formatCurrency(catTotals[c])}</td></tr>`;
+        html += '<h4 style="margin-top:8px;">Company-wise</h4><table><tr><th>Company</th><th>Total</th></tr>';
+        Object.keys(companyTotals).sort().forEach(c => {
+            html += `<tr><td>${escapeHtml(c)}</td><td>${formatCurrency(companyTotals[c])}</td></tr>`;
         });
         html += '</table>';
         container.innerHTML = html;
@@ -3488,10 +3507,10 @@ function updateKPIs() {
             return;
         }
         const sorted = [...allPersonalExpenses].sort((a,b) => a.date < b.date ? -1 : 1);
-        let hhtml = '<table><tr><th>Date</th><th>Category</th><th>Amount</th><th>Description</th><th>Action</th></tr>';
+        let hhtml = '<table><tr><th>Date</th><th>Company</th><th>Amount</th><th>Description</th><th>Action</th></tr>';
         sorted.forEach(e => {
             const actionBtns = renderPersonalActionButtons('personalExpenses', e.id, e.amount, e.desc, e.date);
-            hhtml += `<tr><td>${e.date}</td><td>${e.category}</td><td>${formatCurrency(e.amount)}</td><td>${e.desc}</td><td>${actionBtns}</td></tr>`;
+            hhtml += `<tr><td>${e.date}</td><td>${escapeHtml(e.company)}</td><td>${formatCurrency(e.amount)}</td><td>${escapeHtml(e.desc)}</td><td>${actionBtns}</td></tr>`;
         });
         hhtml += '</table>';
         histContainer.innerHTML = hhtml;
@@ -3510,15 +3529,85 @@ function updateKPIs() {
         const dayExpenses = allPersonalExpenses.filter(e => e.date === date);
         if (dayExpenses.length === 0) { container.innerHTML = '<p>No expenses on this date.</p>'; return; }
         let total = 0;
-        let html = '<table><tr><th>Category</th><th>Amount</th><th>Description</th></tr>';
+        let html = '<table><tr><th>Company</th><th>Amount</th><th>Description</th></tr>';
         dayExpenses.forEach(e => {
             total += e.amount;
-            html += `<tr><td>${e.category}</td><td>${formatCurrency(e.amount)}</td><td>${e.desc}</td></tr>`;
+            html += `<tr><td>${escapeHtml(e.company)}</td><td>${formatCurrency(e.amount)}</td><td>${escapeHtml(e.desc)}</td></tr>`;
         });
         html += `<tr style="font-weight:bold; background:#f0f4ff;"><td>Total</td><td>${formatCurrency(total)}</td><td></td></tr>`;
         html += '</table>';
         container.innerHTML = html;
     }
+
+    // ============================================================
+    // COMPANIES (AK / KB) — company-wise cash flow tracking
+    // ============================================================
+    let allCompanies = [];
+
+    function getCompanyRunningBalance(companyName) {
+        const rec = allCompanies.find(c => c.id === companyName);
+        const opening = rec ? (rec.initialBalance || 0) : 0;
+        const outWorkers = allAdminExpenses.filter(e => e.company === companyName).reduce((s, e) => s + e.amount, 0);
+        const inVendors = allVendorTransactions.filter(t => t.txType === 'receipt' && t.company === companyName).reduce((s, t) => s + t.amount, 0);
+        const outPersonal = allPersonalExpenses.filter(e => e.company === companyName).reduce((s, e) => s + e.amount, 0);
+        return opening - outWorkers + inVendors - outPersonal;
+    }
+
+    function renderCompanies() {
+        ['AK', 'KB'].forEach(companyName => {
+            const rec = allCompanies.find(c => c.id === companyName);
+            const opening = rec ? (rec.initialBalance || 0) : 0;
+            document.getElementById(`companyBalanceDisplay-${companyName}`).textContent = formatCurrency(opening);
+
+            const running = getCompanyRunningBalance(companyName);
+            const runEl = document.getElementById(`companyRunningBalance-${companyName}`);
+            runEl.textContent = formatCurrency(running);
+            runEl.className = running < 0 ? 'negative' : 'positive';
+
+            const rows = [];
+            allAdminExpenses.filter(e => e.company === companyName).forEach(e => {
+                rows.push({ date: e.date, desc: `Paid to ${e.senior} (Worker)`, amount: -e.amount, note: e.note || '' });
+            });
+            allVendorTransactions.filter(t => t.txType === 'receipt' && t.company === companyName).forEach(t => {
+                rows.push({ date: t.date, desc: `Received from ${t.vendor} (Vendor)`, amount: t.amount, note: t.note || '' });
+            });
+            allPersonalExpenses.filter(e => e.company === companyName).forEach(e => {
+                rows.push({ date: e.date, desc: `Personal Expense: ${e.desc}`, amount: -e.amount, note: '' });
+            });
+            rows.sort((a, b) => a.date < b.date ? 1 : -1);
+
+            const histEl = document.getElementById(`companyHistory-${companyName}`);
+            if (rows.length === 0) {
+                histEl.innerHTML = '<p>No transactions yet for this company.</p>';
+                return;
+            }
+            let html = '<table><tr><th>Date</th><th>Description</th><th>Amount</th></tr>';
+            rows.forEach(r => {
+                html += `<tr><td>${r.date || ''}</td><td>${escapeHtml(r.desc)}</td><td class="${r.amount < 0 ? 'negative' : 'positive'}">${r.amount < 0 ? '-' : '+'} ${formatCurrency(Math.abs(r.amount))}</td></tr>`;
+            });
+            html += '</table>';
+            histEl.innerHTML = html;
+        });
+    }
+
+    function editCompanyBalanceRow(companyName) {
+        if (currentUser !== 'admin') { alert('Only Admin can edit!'); return; }
+        const rec = allCompanies.find(c => c.id === companyName);
+        const current = rec ? (rec.initialBalance || 0) : 0;
+        const el = document.getElementById(`companyBalanceDisplay-${companyName}`);
+        el.innerHTML = `<input type="text" inputmode="decimal" id="companyBalanceInput-${companyName}" class="amount-input" value="${formatNumber(current)}" oninput="formatAmountInput(this)" style="width:120px; padding:4px 6px; font-size:13px;" />
+            <button class="btn btn-sm btn-primary" style="font-size:11px; padding:3px 8px; margin-left:4px;" onclick="saveCompanyBalanceRow('${companyName}')">💾 Save</button>`;
+    }
+
+    function saveCompanyBalanceRow(companyName) {
+        const input = document.getElementById(`companyBalanceInput-${companyName}`);
+        if (!input) return;
+        const amount = getRawAmount(input);
+        if (isNaN(amount)) { alert('Enter a valid amount.'); return; }
+        db.collection('companies').doc(companyName).set({ initialBalance: amount }, { merge: true })
+            .catch(err => alert('Error: ' + err.message));
+    }
+
 
     // ============================================================
     // DASHBOARD FUNCTIONS
@@ -3874,7 +3963,7 @@ function updateKPIs() {
                 data.personalExpenses.forEach(p => {
                     const ref = db.collection('personalExpenses').doc();
                     importPromises.push(ref.set({
-                        date: p.date, category: p.category, amount: p.amount,
+                        date: p.date, company: p.company || p.category, amount: p.amount,
                         desc: p.desc || 'Expense',
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     }));
@@ -4052,6 +4141,12 @@ function updateKPIs() {
             renderAll();
         });
 
+        db.collection('companies').onSnapshot(snapshot => {
+            allCompanies = [];
+            snapshot.forEach(doc => allCompanies.push({ id: doc.id, ...doc.data() }));
+            if (document.getElementById('tab-companies').classList.contains('active')) renderCompanies();
+        });
+
         db.collection('vendors').onSnapshot(snapshot => {
     allVendors = [];
     snapshot.forEach(doc => allVendors.push({ id: doc.id, ...doc.data() }));
@@ -4092,6 +4187,7 @@ function updateKPIs() {
         renderSalaryHistory();
         renderSalarySummary();
         renderBaseSalaryList();
+        if (document.getElementById('tab-companies').classList.contains('active')) renderCompanies();
         if (document.getElementById('tab-dashboard').classList.contains('active')) renderDashboard();
     }
 
