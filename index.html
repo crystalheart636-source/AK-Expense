@@ -969,7 +969,7 @@
 
     <!-- ========== SIDEBAR ========== -->
     <div class="sidebar">
-        <div class="sidebar-brand"><span>💰</span> Expense</div>
+        <div class="sidebar-brand" onclick="handleBrandSecretTap()" style="cursor:pointer;"><span>💰</span> Expense</div>
         <button class="sidebar-btn active" onclick="switchTab('workers')"><span class="icon">👷</span> Workers</button>
         <button class="sidebar-btn" onclick="switchTab('vendors')"><span class="icon">🏪</span> Vendors</button>
         <button class="sidebar-btn" onclick="switchTab('personal')"><span class="icon">👤</span> Personal</button>
@@ -1140,7 +1140,7 @@
 
             <!-- Reset Workers -->
 		<div style="margin-top:16px; text-align:right;">
-   		 <button onclick="resetWorkersData()" class="btn-danger" style="width:auto; padding:6px 10px; font-size:13.5px;">🗑 Reset Workers</button>
+   		 <button onclick="resetWorkersData()" class="btn-danger danger-zone-btn hidden" style="width:auto; padding:6px 10px; font-size:13.5px;">🗑 Reset Workers</button>
 		</div>
 
             </div>
@@ -1446,7 +1446,7 @@
 
             <!-- Reset Vendors -->
 		<div style="margin-top:16px; text-align:right;">
-   		 <button onclick="resetVendorData()" class="btn-danger" style="width:auto; padding:6px 8px; font-size:13.5px;">🗑 Reset Vendors</button>
+   		 <button onclick="resetVendorData()" class="btn-danger danger-zone-btn hidden" style="width:auto; padding:6px 8px; font-size:13.5px;">🗑 Reset Vendors</button>
 		</div>
         </div>
 
@@ -1503,7 +1503,7 @@
             
             <!-- Reset Personal -->
 		<div style="margin-top:16px; text-align:right;">
-    		<button onclick="resetPersonalData()" class="btn-danger" style="width:auto; padding:6px 8px; font-size:13.5px;">🗑 Reset Personal</button>
+    		<button onclick="resetPersonalData()" class="btn-danger danger-zone-btn hidden" style="width:auto; padding:6px 8px; font-size:13.5px;">🗑 Reset Personal</button>
 		</div>
         </div>
 
@@ -1771,6 +1771,26 @@
     // ============================================================
     // TAB SWITCHING
     // ============================================================
+    // ============================================================
+    // HIDDEN "DANGER ZONE" — reset buttons are hidden by default.
+    // Tap the sidebar logo 5 times within 3 seconds to reveal/hide them.
+    // ============================================================
+    let brandTapCount = 0;
+    let brandTapTimer = null;
+    function handleBrandSecretTap() {
+        brandTapCount++;
+        if (brandTapTimer) clearTimeout(brandTapTimer);
+        brandTapTimer = setTimeout(() => { brandTapCount = 0; }, 3000);
+        if (brandTapCount >= 5) {
+            brandTapCount = 0;
+            clearTimeout(brandTapTimer);
+            const btns = document.querySelectorAll('.danger-zone-btn');
+            const nowHidden = btns.length && !btns[0].classList.contains('hidden');
+            btns.forEach(b => b.classList.toggle('hidden', nowHidden));
+            alert(nowHidden ? '🔒 Reset buttons hidden again.' : '🔓 Reset buttons unlocked! (Tap logo 5x again to hide them)');
+        }
+    }
+
     function switchTab(tab) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.sidebar-btn').forEach(el => el.classList.remove('active'));
