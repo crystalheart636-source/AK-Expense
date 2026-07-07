@@ -1124,7 +1124,10 @@
                 </div>
                 </div>
                 <div class="card">
-                    <h3>📜 All Transactions <span class="security-badge">Edit / Delete</span></h3>
+                    <h3 style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                        <span>📜 All Transactions <span class="security-badge">Edit / Delete</span></span>
+                        <button onclick="openAllTransactionsReport()" class="btn btn-primary" style="padding:5px 14px; font-size:13px; min-height:32px; margin-top:0; width:auto;">View</button>
+                    </h3>
                     <div id="allTransactions" style="max-height:400px; overflow-y:auto;"></div>
                 </div>
                 <div class="card">
@@ -3328,6 +3331,35 @@ function updateKPIs() {
         html += `<tr style="font-weight:bold; background:#f0f4ff;"><td colspan="2">Total</td><td>${formatCurrency(total)}</td><td></td></tr>`;
         html += '</table>';
         container.innerHTML = html;
+    }
+
+    function openAllTransactionsReport() {
+        const all = [];
+        allAdminExpenses.forEach(e => all.push({ 
+            type: 'Admin→Senior', date: e.date, from: 'Admin' + (e.company ? ` (${e.company})` : ''), to: e.senior, amount: e.amount, note: e.note
+        }));
+        allDistributions.forEach(e => all.push({ 
+            type: 'Senior→Junior', date: e.date, from: e.senior, to: e.junior, amount: e.amount, note: e.note
+        }));
+        allDailyExpenses.forEach(e => all.push({ 
+            type: 'Daily Expense', date: e.date, from: e.worker, to: '—', amount: e.amount, note: e.desc
+        }));
+        if (all.length === 0) { alert('No transactions found.'); return; }
+        all.sort((a, b) => a.date < b.date ? 1 : -1);
+
+        let total = 0;
+        let rows = '';
+        all.forEach(t => {
+            total += t.amount;
+            rows += `<tr><td>${t.date || ''}</td><td>${t.type}</td><td>${t.from}</td><td>${t.to}</td><td>${formatCurrency(t.amount)}</td><td>${t.note || ''}</td></tr>`;
+        });
+        const body = `
+        <div class="summary">
+            <div class="summary-item"><div class="label">Total Transactions</div><div class="value">${all.length}</div></div>
+            <div class="summary-item"><div class="label">Total Amount</div><div class="value">${formatCurrency(total)}</div></div>
+        </div>
+        <table><tr><th>Date</th><th>Type</th><th>From</th><th>To</th><th>Amount</th><th>Note</th></tr>${rows}</table>`;
+        openReportPopup('📜 All Transactions Report', body);
     }
 
     function renderAllTransactions() {
