@@ -1035,6 +1035,10 @@
                 <h3>✏️ Edit Worker Transaction</h3>
                 <div class="row">
                     <div><label>Date</label><input type="date" id="workersEditDate" /></div>
+                    <div id="workersEditSeniorWrap" style="display:none;"><label>Senior</label><select id="workersEditSenior"></select></div>
+                    <div id="workersEditJuniorWrap" style="display:none;"><label>Junior</label><select id="workersEditJunior"></select></div>
+                    <div id="workersEditWorkerWrap" style="display:none;"><label>Worker</label><select id="workersEditWorker"></select></div>
+                    <div id="workersEditCompanyWrap" style="display:none;"><label>Company</label><select id="workersEditCompany"><option value="AK">AK</option><option value="KB">KB</option></select></div>
                     <div><label>Amount</label><input type="text" inputmode="decimal" id="workersEditAmount" class="amount-input" oninput="formatAmountInput(this)" /></div>
                     <div><label>Note</label><input type="text" id="workersEditNote" /></div>
                     <div style="flex:0.5; display:flex; gap:6px; align-items:flex-end;">
@@ -1149,9 +1153,22 @@
                 <div id="salaryEditForm" class="card hidden edit-form-container">
                     <h3>✏️ Edit Salary Payment</h3>
                     <div class="row">
+                        <div><label>Worker</label><select id="salaryEditWorker"></select></div>
                         <div><label>Date</label><input type="date" id="salaryEditDate" /></div>
+                        <div><label>For Month</label><input type="month" id="salaryEditMonth" /></div>
                         <div><label>Amount</label><input type="text" inputmode="decimal" id="salaryEditAmount" class="amount-input" oninput="formatAmountInput(this)" /></div>
-                        <div><label>Note</label><input type="text" id="salaryEditNote" /></div>
+                        <div>
+                            <label>Note</label>
+                            <select id="salaryEditNote" onchange="handleSalaryEditNoteChange()">
+                                <option value="Base Salary">Base Salary</option>
+                                <option value="Advance Salary">Advance Salary</option>
+                                <option value="Partial Salary">Partial Salary</option>
+                                <option value="Full Salary">Full Salary</option>
+                                <option value="Bonus">Bonus</option>
+                                <option value="Other">Other (type below)</option>
+                            </select>
+                            <input type="text" id="salaryEditNoteOther" placeholder="Type custom note" style="display:none; margin-top:6px;" />
+                        </div>
                         <div style="flex:0.5; display:flex; gap:6px; align-items:flex-end;">
                             <button onclick="saveSalaryEdit()" class="btn-save" style="margin-top:22px;">💾 Save</button>
                             <button onclick="cancelSalaryEdit()" class="btn-cancel" style="margin-top:22px;">✖</button>
@@ -1282,6 +1299,22 @@
 <div id="vendorsEditForm" class="card edit-form-container" style="padding:14px;">
     <h3 style="font-size:13.5px; font-weight:700; margin-bottom:8px;"><i class="fas fa-edit"></i> Edit Vendor Transaction</h3>
     <div class="row" style="gap:10px;">
+        <div style="flex:1;"><label style="font-size:13px;">Vendor</label><select id="vendorsEditVendor" style="padding:6px 10px; font-size:14px; min-height:38px;"></select></div>
+        <div style="flex:1;"><label style="font-size:13px;">Type</label>
+            <select id="vendorsEditType" style="padding:6px 10px; font-size:14px; min-height:38px;" onchange="handleVendorsEditTypeChange()">
+                <option value="purchase">Purchase</option>
+                <option value="payment">Payment</option>
+                <option value="return">Return</option>
+                <option value="discount">Discount</option>
+                <option value="receipt">Payment Received (from Vendor)</option>
+            </select>
+        </div>
+        <div id="vendorsEditCompanyWrap" style="display:none; flex:1;"><label style="font-size:13px;">For Company</label>
+            <select id="vendorsEditCompany" style="padding:6px 10px; font-size:14px; min-height:38px;"><option value="AK">AK</option><option value="KB">KB</option></select>
+        </div>
+        <div style="flex:1;"><label style="font-size:13px;">Reference/Invoice</label><input type="text" id="vendorsEditRef" style="padding:6px 10px; font-size:14px; min-height:38px;" /></div>
+    </div>
+    <div class="row" style="gap:10px; margin-top:8px;">
         <div style="flex:1;"><label style="font-size:13px;">Date</label><input type="date" id="vendorsEditDate" style="padding:6px 10px; font-size:14px; min-height:38px;" /></div>
         <div style="flex:1;"><label style="font-size:13px;">Amount</label><input type="text" id="vendorsEditAmount" class="amount-input" style="padding:6px 10px; font-size:14px; min-height:38px; text-align:right;" oninput="formatAmountInput(this)" /></div>
         <div style="flex:1;"><label style="font-size:13px;">Note</label><input type="text" id="vendorsEditNote" style="padding:6px 10px; font-size:14px; min-height:38px;" /></div>
@@ -1506,6 +1539,24 @@
                     <div style="font-size:15px; font-weight:800; margin-bottom:6px;">Current Balance: <span id="companyRunningBalance-KB" class="positive"></span></div>
                     <h4 style="font-size:13px; margin:10px 0 4px;">📜 History</h4>
                     <div id="companyHistory-KB" style="max-height:320px; overflow-y:auto;">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Overall Summary (Left) + Date-wise (Right) -->
+            <div class="grid-2" style="gap:14px;">
+                <div class="card" style="border-left:4px solid #7C3AED;">
+                    <h3>📊 Overall Summary (AK + KB Combined)</h3>
+                    <div id="companiesOverallStats" style="margin-bottom:10px;"></div>
+                    <h4 style="font-size:13px; margin:10px 0 4px;">📜 Combined History</h4>
+                    <div id="companiesOverallHistory" style="max-height:340px; overflow-y:auto;">Loading...</div>
+                </div>
+                <div class="card" style="border-left:4px solid #7C3AED;">
+                    <h3>📅 Date-wise (Both Companies)</h3>
+                    <div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; align-items:center;">
+                       <label style="font-size:13.5px; margin:0; font-weight:600;">Select Date</label>
+                       <input type="date" id="companiesDateFilter" onchange="renderCompaniesDateWise()" style="padding:6px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:13.5px; min-height:38px; width:180px;" />
+                    </div>
+                    <div id="companiesDateWiseSummary" style="max-height:340px; overflow-y:auto;">Loading...</div>
                 </div>
             </div>
         </div>
@@ -1748,12 +1799,33 @@
     // ============================================================
     let workersEditData = null;
 
-    function startWorkersEdit(collection, id, amount, note, date, senior, junior, worker, desc) {
-        workersEditData = { collection, id, amount, note, date, senior, junior, worker, desc };
+    function startWorkersEdit(collection, id, amount, note, date, senior, junior, worker, desc, company) {
+        workersEditData = { collection, id, amount, note, date, senior, junior, worker, desc, company };
         document.getElementById('workersEditForm').classList.remove('hidden');
         document.getElementById('workersEditDate').value = date || '';
-        document.getElementById('workersEditAmount').value = amount || '';
+        document.getElementById('workersEditAmount').value = formatNumber(amount) || '';
         document.getElementById('workersEditNote').value = note || desc || '';
+
+        document.getElementById('workersEditSeniorWrap').style.display = 'none';
+        document.getElementById('workersEditJuniorWrap').style.display = 'none';
+        document.getElementById('workersEditWorkerWrap').style.display = 'none';
+        document.getElementById('workersEditCompanyWrap').style.display = 'none';
+
+        if (collection === 'adminExpenses') {
+            document.getElementById('workersEditSeniorWrap').style.display = 'block';
+            document.getElementById('workersEditSenior').value = senior || '';
+            document.getElementById('workersEditCompanyWrap').style.display = 'block';
+            document.getElementById('workersEditCompany').value = company || 'AK';
+        } else if (collection === 'distributions') {
+            document.getElementById('workersEditSeniorWrap').style.display = 'block';
+            document.getElementById('workersEditSenior').value = senior || '';
+            document.getElementById('workersEditJuniorWrap').style.display = 'block';
+            document.getElementById('workersEditJunior').value = junior || '';
+        } else if (collection === 'dailyExpenses') {
+            document.getElementById('workersEditWorkerWrap').style.display = 'block';
+            document.getElementById('workersEditWorker').value = worker || '';
+        }
+
         document.getElementById('workersEditForm').scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -1769,14 +1841,15 @@
         let updateData = { date: newDate, amount: newAmount };
         if (workersEditData.collection === 'adminExpenses') {
             updateData.note = newNote || 'Admin expense';
-            updateData.senior = workersEditData.senior;
+            updateData.senior = document.getElementById('workersEditSenior').value;
+            updateData.company = document.getElementById('workersEditCompany').value;
         } else if (workersEditData.collection === 'distributions') {
             updateData.note = newNote || 'Distribution';
-            updateData.senior = workersEditData.senior;
-            updateData.junior = workersEditData.junior;
+            updateData.senior = document.getElementById('workersEditSenior').value;
+            updateData.junior = document.getElementById('workersEditJunior').value;
         } else if (workersEditData.collection === 'dailyExpenses') {
             updateData.desc = newNote || 'Expense';
-            updateData.worker = workersEditData.worker;
+            updateData.worker = document.getElementById('workersEditWorker').value;
         } else if (workersEditData.collection === 'salaryPayments') {
             updateData.note = newNote || 'Salary';
             updateData.worker = workersEditData.worker;
@@ -1796,26 +1869,48 @@
     // ============================================================
     let salaryEditData = null;
 
+    function handleSalaryEditNoteChange() {
+        const sel = document.getElementById('salaryEditNote');
+        const other = document.getElementById('salaryEditNoteOther');
+        if (!sel || !other) return;
+        other.style.display = sel.value === 'Other' ? 'block' : 'none';
+    }
+
     function startSalaryEdit(id, amount, note, date, worker) {
+        const record = allSalaryPayments.find(e => e.id === id);
         salaryEditData = { id, amount, note, date, worker };
         document.getElementById('salaryEditForm').classList.remove('hidden');
+        document.getElementById('salaryEditWorker').value = record ? record.worker : (worker || '');
         document.getElementById('salaryEditDate').value = date || '';
+        document.getElementById('salaryEditMonth').value = record ? (record.month || '') : '';
         document.getElementById('salaryEditAmount').value = formatNumber(amount) || '';
-        document.getElementById('salaryEditNote').value = note || '';
+        const noteVal = record ? record.note : note;
+        const knownNotes = ['Base Salary', 'Advance Salary', 'Partial Salary', 'Full Salary', 'Bonus'];
+        if (knownNotes.includes(noteVal)) {
+            document.getElementById('salaryEditNote').value = noteVal;
+            document.getElementById('salaryEditNoteOther').value = '';
+        } else {
+            document.getElementById('salaryEditNote').value = 'Other';
+            document.getElementById('salaryEditNoteOther').value = noteVal || '';
+        }
+        handleSalaryEditNoteChange();
         document.getElementById('salaryEditForm').scrollIntoView({ behavior: 'smooth' });
     }
 
     function saveSalaryEdit() {
         if (!salaryEditData) { alert('No salary entry being edited.'); return; }
+        const newWorker = document.getElementById('salaryEditWorker').value;
         const newDate = document.getElementById('salaryEditDate').value;
+        const newMonth = document.getElementById('salaryEditMonth').value;
         const newAmount = getRawAmount(document.getElementById('salaryEditAmount'));
-        const newNote = document.getElementById('salaryEditNote').value.trim();
+        const noteSel = document.getElementById('salaryEditNote').value;
+        const newNote = (noteSel === 'Other' ? document.getElementById('salaryEditNoteOther').value.trim() : noteSel) || 'Salary';
         if (!newDate || !newAmount || newAmount <= 0) {
             alert('Please fill all fields correctly.');
             return;
         }
         db.collection('salaryPayments').doc(salaryEditData.id).update({
-            date: newDate, amount: newAmount, note: newNote || 'Salary', worker: salaryEditData.worker
+            date: newDate, amount: newAmount, note: newNote, worker: newWorker, month: newMonth
         })
             .then(() => { alert('✅ Updated!'); cancelSalaryEdit(); })
             .catch(err => alert('❌ Error: ' + err.message));
@@ -1839,12 +1934,25 @@
     // ============================================================
     let vendorsEditData = null;
 
+    function handleVendorsEditTypeChange() {
+        const sel = document.getElementById('vendorsEditType');
+        const wrap = document.getElementById('vendorsEditCompanyWrap');
+        if (!sel || !wrap) return;
+        wrap.style.display = sel.value === 'receipt' ? 'block' : 'none';
+    }
+
     function startVendorsEdit(collection, id, amount, note, date) {
+        const record = allVendorTransactions.find(t => t.id === id);
         vendorsEditData = { collection, id, amount, note, date };
         document.getElementById('vendorsEditForm').classList.remove('hidden');
         document.getElementById('vendorsEditDate').value = date || '';
         document.getElementById('vendorsEditAmount').value = formatNumber(amount) || '';
-        document.getElementById('vendorsEditNote').value = note || '';
+        document.getElementById('vendorsEditNote').value = (record ? record.note : note) || '';
+        document.getElementById('vendorsEditVendor').value = record ? record.vendor : '';
+        document.getElementById('vendorsEditType').value = record ? record.txType : 'purchase';
+        document.getElementById('vendorsEditRef').value = record ? (record.ref || record.invoice || '') : '';
+        document.getElementById('vendorsEditCompany').value = (record && record.company) || 'AK';
+        handleVendorsEditTypeChange();
         document.getElementById('vendorsEditForm').scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -1853,11 +1961,22 @@
         const newDate = document.getElementById('vendorsEditDate').value;
         const newAmount = getRawAmount(document.getElementById('vendorsEditAmount'));
         const newNote = document.getElementById('vendorsEditNote').value.trim();
+        const newVendor = document.getElementById('vendorsEditVendor').value;
+        const newType = document.getElementById('vendorsEditType').value;
+        const newRef = document.getElementById('vendorsEditRef').value.trim();
+        const newCompany = newType === 'receipt' ? document.getElementById('vendorsEditCompany').value : null;
         if (!newDate || !newAmount || newAmount <= 0) {
             alert('Please fill all fields correctly.');
             return;
         }
-        let updateData = { date: newDate, amount: newAmount, note: newNote || 'Transaction' };
+        if (newType === 'receipt' && !newCompany) {
+            alert('Please select which company received this payment.');
+            return;
+        }
+        let updateData = {
+            date: newDate, amount: newAmount, note: newNote || 'Transaction',
+            vendor: newVendor, txType: newType, ref: newRef, invoice: newRef, company: newCompany
+        };
         db.collection(vendorsEditData.collection).doc(vendorsEditData.id).update(updateData)
             .then(() => { alert('✅ Updated!'); cancelVendorsEdit(); })
             .catch(err => alert('❌ Error: ' + err.message));
@@ -1906,10 +2025,10 @@
     // RENDER ACTION BUTTONS (Tab-specific)
     // ============================================================
     
-    function renderWorkersActionButtons(collection, id, amount, note, date, senior, junior, worker, desc) {
+    function renderWorkersActionButtons(collection, id, amount, note, date, senior, junior, worker, desc, company) {
         if (currentUser !== 'admin') return '';
         return `<div class="action-btns">
-            <button onclick="startWorkersEdit('${collection}','${id}',${amount},'${(note || desc || '').replace(/'/g, "\\'")}','${date}','${senior || ''}','${junior || ''}','${worker || ''}','${(desc || '').replace(/'/g, "\\'")}')" class="btn-edit btn-small">✏️</button>
+            <button onclick="startWorkersEdit('${collection}','${id}',${amount},'${(note || desc || '').replace(/'/g, "\\'")}','${date}','${senior || ''}','${junior || ''}','${worker || ''}','${(desc || '').replace(/'/g, "\\'")}','${company || ''}')" class="btn-edit btn-small">✏️</button>
             <button onclick="deleteTransaction('${collection}','${id}')" class="btn-delete btn-small">🗑️</button>
         </div>`;
     }
@@ -2170,7 +2289,7 @@
     }
 
     function updateVendorDropdowns() {
-        const selects = ['txVendor', 'modalTxVendor', 'vendorLedgerSelect'];
+        const selects = ['txVendor', 'modalTxVendor', 'vendorLedgerSelect', 'vendorsEditVendor'];
         selects.forEach(id => {
             const el = document.getElementById(id);
             if (!el) return;
@@ -2944,7 +3063,7 @@ function updateKPIs() {
 }
 
     function updateWorkerDropdowns() {
-        const selects = ['adminSenior', 'distSenior', 'distJunior', 'dailyWorker', 'ledgerPerson', 'settlementWorker', 'salaryWorker'];
+        const selects = ['adminSenior', 'distSenior', 'distJunior', 'dailyWorker', 'ledgerPerson', 'settlementWorker', 'salaryWorker', 'workersEditSenior', 'workersEditJunior', 'workersEditWorker', 'salaryEditWorker'];
         selects.forEach(id => {
             const select = document.getElementById(id);
             if (!select) return;
@@ -3196,7 +3315,7 @@ function updateKPIs() {
         const all = [];
         allAdminExpenses.forEach(e => all.push({ 
             type: 'Admin→Senior', date: e.date, from: 'Admin' + (e.company ? ` (${e.company})` : ''), to: e.senior, amount: e.amount, note: e.note,
-            id: e.id, collection: 'adminExpenses', senior: e.senior
+            id: e.id, collection: 'adminExpenses', senior: e.senior, company: e.company
         }));
         allDistributions.forEach(e => all.push({ 
             type: 'Senior→Junior', date: e.date, from: e.senior, to: e.junior, amount: e.amount, note: e.note,
@@ -3212,7 +3331,7 @@ function updateKPIs() {
         all.forEach(t => {
             const actionBtns = renderWorkersActionButtons(
                 t.collection, t.id, t.amount, t.note || t.desc || '', t.date,
-                t.senior || '', t.junior || '', t.worker || '', t.desc || ''
+                t.senior || '', t.junior || '', t.worker || '', t.desc || '', t.company || ''
             );
             html += `<tr><td>${t.date}</td><td>${t.type}</td><td>${escapeHtml(t.from)}</td><td>${escapeHtml(t.to)}</td><td>${formatCurrency(t.amount)}</td><td>${escapeHtml(t.note || t.desc || '')}</td><td>${actionBtns}</td></tr>`;
         });
@@ -3229,7 +3348,7 @@ function updateKPIs() {
         allAdminExpenses.forEach(e => {
             if (e.senior === name) txs.push({ 
                 id: e.id, collection: 'adminExpenses', date: e.date, desc: 'Received from Admin' + (e.company ? ` (${e.company})` : ''), 
-                amount: e.amount, type: 'in', note: e.note, senior: e.senior, order: e.timestamp || e.date
+                amount: e.amount, type: 'in', note: e.note, senior: e.senior, company: e.company, order: e.timestamp || e.date
             });
         });
         allDistributions.forEach(e => {
@@ -3259,7 +3378,7 @@ function updateKPIs() {
                 if (t.type === 'in') totalIn += t.amount; else totalOut += t.amount;
                 const actionBtns = renderWorkersActionButtons(
                     t.collection, t.id, t.amount, t.note || t.desc || '', t.date,
-                    t.senior || '', t.junior || '', t.worker || '', t.desc || ''
+                    t.senior || '', t.junior || '', t.worker || '', t.desc || '', t.company || ''
                 );
                 html += `<tr><td>${t.date}</td><td>${escapeHtml(t.desc)}</td><td class="${cls}">${sign} ${formatCurrency(t.amount)}</td><td>${t.type === 'in' ? 'Received' : 'Given/Spent'}</td><td>${actionBtns}</td></tr>`;
             });
@@ -3553,6 +3672,20 @@ function updateKPIs() {
         return opening - outWorkers + inVendors - outPersonal;
     }
 
+    function getCompanyTransactionRows(companyName) {
+        const rows = [];
+        allAdminExpenses.filter(e => e.company === companyName).forEach(e => {
+            rows.push({ date: e.date, desc: `Paid to ${e.senior} (Worker)`, amount: -e.amount, note: e.note || '', company: companyName });
+        });
+        allVendorTransactions.filter(t => t.txType === 'receipt' && t.company === companyName).forEach(t => {
+            rows.push({ date: t.date, desc: `Received from ${t.vendor} (Vendor)`, amount: t.amount, note: t.note || '', company: companyName });
+        });
+        allPersonalExpenses.filter(e => e.company === companyName).forEach(e => {
+            rows.push({ date: e.date, desc: `Personal Expense: ${e.desc}`, amount: -e.amount, note: '', company: companyName });
+        });
+        return rows;
+    }
+
     function renderCompanies() {
         ['AK', 'KB'].forEach(companyName => {
             const rec = allCompanies.find(c => c.id === companyName);
@@ -3564,30 +3697,78 @@ function updateKPIs() {
             runEl.textContent = formatCurrency(running);
             runEl.className = running < 0 ? 'negative' : 'positive';
 
-            const rows = [];
-            allAdminExpenses.filter(e => e.company === companyName).forEach(e => {
-                rows.push({ date: e.date, desc: `Paid to ${e.senior} (Worker)`, amount: -e.amount, note: e.note || '' });
-            });
-            allVendorTransactions.filter(t => t.txType === 'receipt' && t.company === companyName).forEach(t => {
-                rows.push({ date: t.date, desc: `Received from ${t.vendor} (Vendor)`, amount: t.amount, note: t.note || '' });
-            });
-            allPersonalExpenses.filter(e => e.company === companyName).forEach(e => {
-                rows.push({ date: e.date, desc: `Personal Expense: ${e.desc}`, amount: -e.amount, note: '' });
-            });
-            rows.sort((a, b) => a.date < b.date ? 1 : -1);
+            const rows = getCompanyTransactionRows(companyName).sort((a, b) => a.date < b.date ? 1 : -1);
 
             const histEl = document.getElementById(`companyHistory-${companyName}`);
             if (rows.length === 0) {
                 histEl.innerHTML = '<p>No transactions yet for this company.</p>';
-                return;
+            } else {
+                let html = '<table><tr><th>Date</th><th>Description</th><th>Amount</th></tr>';
+                rows.forEach(r => {
+                    html += `<tr><td>${r.date || ''}</td><td>${escapeHtml(r.desc)}</td><td class="${r.amount < 0 ? 'negative' : 'positive'}">${r.amount < 0 ? '-' : '+'} ${formatCurrency(Math.abs(r.amount))}</td></tr>`;
+                });
+                html += '</table>';
+                histEl.innerHTML = html;
             }
-            let html = '<table><tr><th>Date</th><th>Description</th><th>Amount</th></tr>';
-            rows.forEach(r => {
-                html += `<tr><td>${r.date || ''}</td><td>${escapeHtml(r.desc)}</td><td class="${r.amount < 0 ? 'negative' : 'positive'}">${r.amount < 0 ? '-' : '+'} ${formatCurrency(Math.abs(r.amount))}</td></tr>`;
-            });
-            html += '</table>';
-            histEl.innerHTML = html;
         });
+        renderCompaniesOverall();
+        renderCompaniesDateWise();
+    }
+
+    function renderCompaniesOverall() {
+        const statsEl = document.getElementById('companiesOverallStats');
+        const histEl = document.getElementById('companiesOverallHistory');
+        if (!statsEl || !histEl) return;
+
+        const openingAK = (allCompanies.find(c => c.id === 'AK') || {}).initialBalance || 0;
+        const openingKB = (allCompanies.find(c => c.id === 'KB') || {}).initialBalance || 0;
+        const runAK = getCompanyRunningBalance('AK');
+        const runKB = getCompanyRunningBalance('KB');
+        const totalOpening = openingAK + openingKB;
+        const totalRunning = runAK + runKB;
+
+        statsEl.innerHTML = `<div class="settlement-summary">
+            <div class="settlement-item"><div class="label">Combined Opening</div><div class="value">${formatCurrency(totalOpening)}</div></div>
+            <div class="settlement-item"><div class="label">Combined Current Balance</div><div class="value ${totalRunning < 0 ? 'negative' : 'positive'}">${formatCurrency(totalRunning)}</div></div>
+        </div>`;
+
+        const rows = [...getCompanyTransactionRows('AK'), ...getCompanyTransactionRows('KB')].sort((a, b) => a.date < b.date ? 1 : -1);
+        if (rows.length === 0) {
+            histEl.innerHTML = '<p>No transactions yet.</p>';
+            return;
+        }
+        let html = '<table><tr><th>Date</th><th>Company</th><th>Description</th><th>Amount</th></tr>';
+        rows.forEach(r => {
+            html += `<tr><td>${r.date || ''}</td><td><strong>${r.company}</strong></td><td>${escapeHtml(r.desc)}</td><td class="${r.amount < 0 ? 'negative' : 'positive'}">${r.amount < 0 ? '-' : '+'} ${formatCurrency(Math.abs(r.amount))}</td></tr>`;
+        });
+        html += '</table>';
+        histEl.innerHTML = html;
+    }
+
+    function renderCompaniesDateWise() {
+        const container = document.getElementById('companiesDateWiseSummary');
+        const dateInput = document.getElementById('companiesDateFilter');
+        if (!container || !dateInput) return;
+        if (!dateInput.value) {
+            dateInput.value = new Date().toISOString().split('T')[0];
+        }
+        const date = dateInput.value;
+        const rows = [...getCompanyTransactionRows('AK'), ...getCompanyTransactionRows('KB')]
+            .filter(r => r.date === date)
+            .sort((a, b) => a.company < b.company ? -1 : 1);
+        if (rows.length === 0) {
+            container.innerHTML = '<p>No transactions on this date.</p>';
+            return;
+        }
+        let total = 0;
+        let html = '<table><tr><th>Company</th><th>Description</th><th>Amount</th></tr>';
+        rows.forEach(r => {
+            total += r.amount;
+            html += `<tr><td><strong>${r.company}</strong></td><td>${escapeHtml(r.desc)}</td><td class="${r.amount < 0 ? 'negative' : 'positive'}">${r.amount < 0 ? '-' : '+'} ${formatCurrency(Math.abs(r.amount))}</td></tr>`;
+        });
+        html += `<tr style="font-weight:bold; background:#f0f4ff;"><td colspan="2">Net for the day</td><td class="${total < 0 ? 'negative' : 'positive'}">${formatCurrency(total)}</td></tr>`;
+        html += '</table>';
+        container.innerHTML = html;
     }
 
     function editCompanyBalanceRow(companyName) {
@@ -4206,6 +4387,7 @@ function updateKPIs() {
         document.getElementById('modalTxDate').value = today;
 	document.getElementById('vendorDateFilter').value = today;
 	document.getElementById('personalDateFilter').value = today;
+	document.getElementById('companiesDateFilter').value = today;
     }
 
     // ============================================================
