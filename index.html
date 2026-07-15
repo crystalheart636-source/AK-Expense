@@ -974,6 +974,7 @@
         <button class="sidebar-btn" onclick="switchTab('vendors')"><span class="icon">🏪</span> Vendors</button>
         <button class="sidebar-btn" onclick="switchTab('personal')"><span class="icon">👤</span> Personal</button>
         <button class="sidebar-btn" onclick="switchTab('companies')"><span class="icon">🏢</span> Companies</button>
+        <button class="sidebar-btn hidden" id="sidebarBtnProfiles" onclick="switchTab('profiles')"><span class="icon">🪪</span> Worker Profiles</button>
         <button class="sidebar-btn" onclick="switchTab('dashboard')"><span class="icon">📊</span> Dashboard</button>
         <div class="sidebar-footer">
             <span id="userRoleBadge" class="badge" style="background:rgba(255,255,255,0.2);">Viewer</span>
@@ -1565,6 +1566,23 @@
         </div>
 
         <!-- ============================================================ -->
+        <!-- ===== TAB: WORKER PROFILES (Admin Only — sensitive data) ===== -->
+        <!-- ============================================================ -->
+        <div id="tab-profiles" class="tab-content">
+            <div class="card" style="border-left: 4px solid #B91C1C;">
+                <h3>🪪 Worker Profiles <span class="security-badge">Admin Only</span></h3>
+                <p style="color:#6b7280; font-size:13px;">CNIC, phone, address, and emergency contact — kept separate and locked to Admin access only.</p>
+            </div>
+
+            <div class="card">
+                <label>Select Worker</label>
+                <select id="profileWorkerSelect" onchange="showWorkerProfile()" style="width:50%; min-width:220px; padding:6px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:14px; min-height:38px;"></select>
+            </div>
+
+            <div id="profileDisplay"></div>
+        </div>
+
+        <!-- ============================================================ -->
         <!-- ===== TAB: DASHBOARD ===== -->
         <!-- ============================================================ -->
         <div id="tab-dashboard" class="tab-content">
@@ -1795,6 +1813,10 @@
     }
 
     function switchTab(tab) {
+        if (tab === 'profiles' && currentUser !== 'admin') {
+            alert('🔒 Worker Profiles is only available to Admin.');
+            return;
+        }
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.sidebar-btn').forEach(el => el.classList.remove('active'));
         document.getElementById('tab-' + tab).classList.add('active');
@@ -1802,6 +1824,7 @@
         if (tab === 'vendors') renderVendors();
         if (tab === 'personal') renderPersonal();
         if (tab === 'companies') renderCompanies();
+        if (tab === 'profiles') renderWorkerProfilesTab();
         if (tab === 'dashboard') renderDashboard();
     }
 
@@ -3053,6 +3076,77 @@ function updateKPIs() {
         container.innerHTML = html;
     }
 
+    // ============================================================
+    // WORKER PROFILES (Admin Only — CNIC, phone, address)
+    // Stored in a SEPARATE Firestore collection (workerProfiles) with
+    // its own Security Rule requiring authentication for both read
+    // and write, so this data never leaks to "Continue as Viewer" mode.
+    // ============================================================
+    let allWorkerProfiles = [];
+
+    function formatCnicInput(input) {
+        let digits = input.value.replace(/\D/g, '').slice(0, 13);
+        let formatted = digits;
+        if (digits.length > 5 && digits.length <= 12) {
+            formatted = digits.slice(0, 5) + '-' + digits.slice(5);
+        } else if (digits.length > 12) {
+            formatted = digits.slice(0, 5) + '-' + digits.slice(5, 12) + '-' + digits.slice(12);
+        }
+        input.value = formatted;
+    }
+
+    function renderWorkerProfilesTab() {
+        const sel = document.getElementById('profileWorkerSelect');
+        if (!sel) return;
+        const prev = sel.value;
+        sel.innerHTML = '<option value="">-- Select Worker --</option>' +
+            allWorkers.map(w => `<option value="${escapeHtml(w.name)}">${escapeHtml(w.name)}</option>`).join('');
+        if (prev && allWorkers.some(w => w.name === prev)) sel.value = prev;
+        showWorkerProfile();
+    }
+
+    function showWorkerProfile() {
+        const name = document.getElementById('profileWorkerSelect').value;
+        const container = document.getElementById('profileDisplay');
+        if (!name) { container.innerHTML = ''; return; }
+
+        const worker = allWorkers.find(w => w.name === name);
+        const profile = allWorkerProfiles.find(p => p.id === (worker ? worker.id : null)) || {};
+
+        container.innerHTML = `
+        <div class="card">
+            <h3>🪪 ${escapeHtml(name)} — Profile</h3>
+            <div class="row2" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div><label>CNIC Number</label><input type="text" id="profileCnic" placeholder="12345-1234567-1" value="${escapeHtml(profile.cnic || '')}" oninput="formatCnicInput(this)" maxlength="15" /></div>
+                <div><label>Mobile Number</label><input type="text" id="profilePhone" placeholder="03XX-XXXXXXX" value="${escapeHtml(profile.phone || '')}" /></div>
+                <div><label>Address</label><input type="text" id="profileAddress" placeholder="Full address" value="${escapeHtml(profile.address || '')}" /></div>
+                <div><label>Joining Date</label><input type="date" id="profileJoiningDate" value="${escapeHtml(profile.joiningDate || '')}" /></div>
+                <div><label>Emergency Contact Name</label><input type="text" id="profileEmergencyName" placeholder="e.g. Father's name" value="${escapeHtml(profile.emergencyName || '')}" /></div>
+                <div><label>Emergency Contact Number</label><input type="text" id="profileEmergencyPhone" placeholder="03XX-XXXXXXX" value="${escapeHtml(profile.emergencyPhone || '')}" /></div>
+            </div>
+            <div style="margin-top:10px;"><label>Notes</label><textarea id="profileNotes" rows="2" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:8px; font-family:inherit;">${escapeHtml(profile.notes || '')}</textarea></div>
+            <button onclick="saveWorkerProfile('${worker ? worker.id : ''}', '${escapeHtml(name).replace(/'/g, "\\'")}')" style="margin-top:12px; background:#B91C1C;">💾 Save Profile</button>
+        </div>`;
+    }
+
+    function saveWorkerProfile(workerId, name) {
+        if (currentUser !== 'admin') { alert('Only Admin can save profiles!'); return; }
+        if (!workerId) { alert('Worker record not found.'); return; }
+        const data = {
+            worker: name,
+            cnic: document.getElementById('profileCnic').value.trim(),
+            phone: document.getElementById('profilePhone').value.trim(),
+            address: document.getElementById('profileAddress').value.trim(),
+            joiningDate: document.getElementById('profileJoiningDate').value,
+            emergencyName: document.getElementById('profileEmergencyName').value.trim(),
+            emergencyPhone: document.getElementById('profileEmergencyPhone').value.trim(),
+            notes: document.getElementById('profileNotes').value.trim()
+        };
+        db.collection('workerProfiles').doc(workerId).set(data, { merge: true })
+            .then(() => alert('✅ Profile saved!'))
+            .catch(err => alert('❌ Error: ' + err.message));
+    }
+
     function renderWorkerList() {
     const container = document.getElementById('workerList');
     if (allWorkers.length === 0) {
@@ -4285,6 +4379,8 @@ function updateKPIs() {
     }
 
     function enableEditing(enable) {
+        const profilesBtn = document.getElementById('sidebarBtnProfiles');
+        if (profilesBtn) profilesBtn.classList.toggle('hidden', !enable);
         ['addWorkerCard','adminExpenseCard','distributeCard','dailyExpenseCard','personalExpenseCard'].forEach(id => {
             const el = document.getElementById(id);
             if (el) {
@@ -4379,6 +4475,14 @@ function updateKPIs() {
             snapshot.forEach(doc => allCompanies.push({ id: doc.id, ...doc.data() }));
             if (document.getElementById('tab-companies').classList.contains('active')) renderCompanies();
         });
+
+        if (currentUser === 'admin') {
+            db.collection('workerProfiles').onSnapshot(snapshot => {
+                allWorkerProfiles = [];
+                snapshot.forEach(doc => allWorkerProfiles.push({ id: doc.id, ...doc.data() }));
+                if (document.getElementById('tab-profiles').classList.contains('active')) renderWorkerProfilesTab();
+            });
+        }
 
         db.collection('vendors').onSnapshot(snapshot => {
     allVendors = [];
